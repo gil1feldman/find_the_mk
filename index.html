@@ -258,7 +258,7 @@
   </div>
 
   <div class="vote-banner">
-    <div class="vote-label">מצא ח"כ שהצביע</div>
+    <div class="vote-label">חפש בגריד</div>
     <div class="vote-title" id="vote-title">...</div>
     <div class="vote-meta" id="vote-meta"></div>
   </div>
@@ -520,9 +520,10 @@ function getRoundGrid(r){
 // PICK QUESTION
 // ════════════════════════════════════════
 function pickPair() {
-  // Build pool of (game, member) pairs not yet used
+  // Build pool of (game, member) pairs not yet used, from a DIFFERENT vote than current
   const pool=[];
   for(const g of allGames){
+    if(currentGame&&g.voteId===currentGame.voteId) continue; // הצבעה אחרת לגמרי
     for(const m of g.members){
       const key=`${g.voteId}|${m.name}`;
       if(!usedPairs.has(key)){
@@ -532,7 +533,7 @@ function pickPair() {
       }
     }
   }
-  if(!pool.length){ usedPairs.clear(); return pickPair(); } // reset if exhausted
+  if(!pool.length){ usedPairs.clear(); return pickPair(); }
   return pool[Math.floor(Math.random()*pool.length)];
 }
 
@@ -764,13 +765,16 @@ function startRound(r){
 
   // Vote banner
   const vt=document.getElementById('vote-title');
-  vt.style.opacity=0;setTimeout(()=>{vt.textContent=currentGame.shortName||currentGame.title;vt.style.opacity=1;},200);
+  vt.style.opacity=0;setTimeout(()=>{
+    vt.textContent=`${currentMK.name} — ${currentGame.shortName||currentGame.title}`;
+    vt.style.opacity=1;
+  },200);
   const meta=document.getElementById('vote-meta');
   meta.innerHTML='';
-  if(currentGame.type){
+  if(currentMK.vote){
     const p=document.createElement('span');
-    p.className=`vote-pill ${TYPE_CLASS[currentGame.type]||''}`;
-    p.textContent=(currentMK.vote===currentGame.type?TYPE_HEB[currentGame.type]:TYPE_HEB[currentMK.vote])||'';
+    p.className=`vote-pill ${TYPE_CLASS[currentMK.vote]||''}`;
+    p.textContent='הצביע '+TYPE_HEB[currentMK.vote];
     meta.appendChild(p);
   }
   if(currentGame.date){
@@ -790,9 +794,9 @@ function showSplash(r){
   document.getElementById('splash-badge').textContent=`סיבוב ${r}`;
   const voteLabel=TYPE_HEB[currentMK.vote]||'';
   document.getElementById('splash-question').textContent=
-    `מצא ח"כ שהצביע ${voteLabel} — ${currentGame.shortName||currentGame.title}`;
+    `מצא את ${currentMK.name} שהצביע ${voteLabel} — ${currentGame.shortName||currentGame.title}`;
   document.getElementById('splash-instruction').textContent=
-    `גריד ${getRoundGrid(r).rows}×${getRoundGrid(r).cols} | ${getRoundTime(r)} שניות${currentMK.faction?' | '+currentMK.faction:''}`;
+    `גריד ${getRoundGrid(r).rows}×${getRoundGrid(r).cols} | ${getRoundTime(r)} שניות${currentMK.faction?' | סיעה: '+currentMK.faction:''}`;
   document.getElementById('splash-overlay').classList.remove('hidden');
 }
 function dismissSplash(){
