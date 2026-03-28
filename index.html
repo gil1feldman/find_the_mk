@@ -513,6 +513,7 @@ async function init() {
 let round=1, lives=MAX_LIVES, totalScore=0, roundsWon=0;
 let highScore=0, gameActive=false, hintUsed=false;
 let timeLeft=INIT_TIME, totalTime=INIT_TIME, timerInterval=null;
+let totalTimeSpent=0, hintsUsedTotal=0;
 let currentGame=null, currentMK=null, currentGridWord='', targetCells=new Set();
 let gridArr=[], gridRows=0, gridCols=0;
 let selectedCells=[], isDragging=false, selectStart=null;
@@ -692,7 +693,7 @@ function checkSel(){
 // ════════════════════════════════════════
 function useHint(){
   if(hintUsed||!gameActive) return;
-  hintUsed=true;
+  hintUsed=true; hintsUsedTotal++;
   const btn=document.getElementById('hint-btn');btn.disabled=true;btn.style.opacity='0.3';
   const available=[...targetCells].filter(k=>{const el=getCellEl(...k.split(',').map(Number));return el&&!el.classList.contains('found')&&!el.classList.contains('hint');});
   if(!available.length) return;
@@ -784,6 +785,7 @@ function buildFactionSummary(){
 
 function onRoundWin(){
   gameActive=false;stopTimer();roundsWon++;
+  totalTimeSpent+=(totalTime-timeLeft);
   const pts=calcScore();totalScore+=pts;
   document.getElementById('score-display').textContent=totalScore.toLocaleString();
   const nextTime=getRoundTime(round+1);
@@ -802,9 +804,34 @@ function nextRound(){
   document.getElementById('faction-summary').style.display='none';
   round++;startRound(round);
 }
-function finishGame(){document.getElementById('win-overlay').classList.remove('show');showGameOver();}
+function finishGame(){
+  document.getElementById('win-overlay').classList.remove('show');
+  const avgTime = roundsWon > 0 ? Math.round(totalTimeSpent / roundsWon) : null;
+  sendToSheets('finish', avgTime);
+  showGameOver();
+}
+
+let LOGGER_URL = 'https://script.google.com/macros/s/AKfycbwW99sr5FpjYpBRKz36HinWNiKqwUoXCpq7HwMqZknj6E5lPsRvgFVaYJKmYvP2ebJI/exec';
+
+function sendToSheets(endReason, avgTime) {
+  if (!LOGGER_URL) return;
+  fetch(LOGGER_URL, {
+    method: 'POST', mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      game:       'wordsearch',
+      score:      totalScore,
+      rounds:     roundsWon,
+      avg_time:   avgTime,
+      hints:      hintsUsedTotal,
+      end_reason: endReason,
+    }),
+  }).catch(() => {});
+}
 
 function showGameOver(){
+  const avgTime = roundsWon > 0 ? Math.round(totalTimeSpent / roundsWon) : null;
+  sendToSheets('gameover', avgTime);
   highScore=lbAdd(totalScore,roundsWon);
   document.getElementById('go-rounds').textContent=roundsWon;
   document.getElementById('go-score').textContent=totalScore.toLocaleString();
@@ -813,7 +840,7 @@ function showGameOver(){
 }
 function restartGame(){
   document.getElementById('gameover-overlay').classList.remove('show');
-  round=1;roundsWon=0;totalScore=0;lives=MAX_LIVES;usedPairs.clear();
+  round=1;roundsWon=0;totalScore=0;lives=MAX_LIVES;totalTimeSpent=0;hintsUsedTotal=0;usedPairs.clear();
   document.getElementById('score-display').textContent='0';resetLives();startRound(1);
 }
 
