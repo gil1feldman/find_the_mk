@@ -37,8 +37,10 @@
     transform:translateY(-50%);font-size:1rem;}
   .vote-label{font-family:'Assistant',sans-serif;font-size:0.52rem;color:var(--knesset);
     text-transform:uppercase;letter-spacing:2px;margin-bottom:2px;font-weight:700;opacity:0.6;}
-  .vote-title{font-size:clamp(0.78rem,2.2vw,0.95rem);font-weight:700;
-    color:var(--knesset);line-height:1.35;transition:opacity 0.25s;}
+  .vote-title{font-size:clamp(0.78rem,2.2vw,0.95rem);font-weight:400;font-family:'Assistant',sans-serif;
+    color:var(--muted);line-height:1.45;transition:opacity 0.25s;}
+  .vote-title strong{color:var(--text);font-family:'Rubik',sans-serif;font-weight:800;}
+  .vote-title .mk-name{color:var(--accent);font-family:'Rubik',sans-serif;font-weight:900;}
   .vote-meta{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;}
   .vote-pill{font-family:'Assistant',sans-serif;font-size:0.62rem;font-weight:700;
     padding:2px 9px;border-radius:20px;background:#f1f5f9;color:var(--muted);}
@@ -147,9 +149,11 @@
   @keyframes popIn{from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:scale(1)}}
   .splash-badge{background:var(--knesset);color:var(--white);font-size:0.68rem;
     font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:5px 16px;border-radius:20px;}
-  .splash-question{font-size:clamp(0.95rem,3.5vw,1.25rem);font-weight:900;color:var(--knesset);
-    line-height:1.4;border-right:5px solid var(--accent);padding-right:14px;
-    text-align:right;width:100%;}
+  .splash-question{font-size:clamp(0.95rem,3.5vw,1.25rem);font-weight:400;color:var(--muted);
+    line-height:1.6;border-right:5px solid var(--accent);padding-right:14px;
+    text-align:right;width:100%;font-family:'Assistant',sans-serif;}
+  .splash-question strong{color:var(--text);font-family:'Rubik',sans-serif;font-weight:900;}
+  .splash-question .mk-name{color:var(--accent);font-family:'Rubik',sans-serif;font-weight:900;}
   .splash-instruction{font-family:'Assistant',sans-serif;font-size:0.82rem;color:var(--muted);
     background:#f8fafc;border-radius:8px;padding:8px 14px;width:100%;}
 
@@ -812,7 +816,7 @@ function startRound(r){
   // Vote banner
   const vt=document.getElementById('vote-title');
   vt.style.opacity=0;setTimeout(()=>{
-  vt.innerHTML=`איפה <span style="color:var(--accent);font-weight:900">${currentMK.name}</span>? הצביע/ה <strong>${TYPE_HEB[currentMK.vote]||''}</strong> — <strong>${currentGame.shortName||currentGame.title}</strong>`;
+  vt.innerHTML=`איפה <span class="mk-name">${currentMK.name}</span>? הצביע/ה <strong>${TYPE_HEB[currentMK.vote]||''}</strong> — <strong>${currentGame.shortName||currentGame.title}</strong>`;
     vt.style.opacity=1;
   },200);
   const meta=document.getElementById('vote-meta');
@@ -841,7 +845,7 @@ function showSplash(r){
   const voteLabel=TYPE_HEB[currentMK.vote]||'';
   const title=currentGame.shortName||currentGame.title;
   document.getElementById('splash-question').innerHTML=
-    `איפה <span style="color:var(--accent);font-weight:900">${currentMK.name}</span> שבהצבעה בנושא <strong>"${title}"</strong> הצביע/ה <strong>${voteLabel}</strong>?`;
+    `איפה <span class="mk-name">${currentMK.name}</span> שבהצבעה בנושא <strong>"${title}"</strong> הצביע/ה <strong>${voteLabel}</strong>?`;
   document.getElementById('splash-instruction').textContent=
     `גריד ${getRoundGrid(r).rows}×${getRoundGrid(r).cols} | ${getRoundTime(r)} שניות${currentMK.faction?' | סיעה: '+currentMK.faction:''}`;
   document.getElementById('splash-overlay').classList.remove('hidden');
