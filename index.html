@@ -423,7 +423,8 @@ function lbAdd(score, rounds) {
 // DATA
 // ════════════════════════════════════════
 let allGames = []; // [{voteId,shortName,title,date,type,members:[{name,vote,faction}]}]
-let usedPairs = new Set(); // "voteId|mkName" already shown
+let usedPairs   = new Set(); // "voteId|mkName" already shown
+let usedMKNames = new Set(); // שמות ח"כים שכבר הופיעו — לא יחזרו
 
 async function fetchRows() {
   const r = await fetch(APPS_URL);
@@ -543,14 +544,14 @@ function pickPair() {
     if(currentGame&&g.voteId===currentGame.voteId) continue; // הצבעה אחרת לגמרי
     for(const m of g.members){
       const key=`${g.voteId}|${m.name}`;
-      if(!usedPairs.has(key)){
+      if(!usedPairs.has(key) && !usedMKNames.has(m.name)){
         const gw=toGrid(m.name);
         const maxLen=Math.max(getRoundGrid(round).rows,getRoundGrid(round).cols);
         if(gw.length>=2&&gw.length<=maxLen) pool.push({game:g,mk:m,gridWord:gw,key});
       }
     }
   }
-  if(!pool.length){ usedPairs.clear(); return pickPair(); }
+  if(!pool.length){ usedPairs.clear(); usedMKNames.clear(); return pickPair(); }
   return pool[Math.floor(Math.random()*pool.length)];
 }
 
@@ -840,7 +841,7 @@ function showGameOver(){
 }
 function restartGame(){
   document.getElementById('gameover-overlay').classList.remove('show');
-  round=1;roundsWon=0;totalScore=0;lives=MAX_LIVES;totalTimeSpent=0;hintsUsedTotal=0;usedPairs.clear();
+  round=1;roundsWon=0;totalScore=0;lives=MAX_LIVES;totalTimeSpent=0;hintsUsedTotal=0;usedPairs.clear();usedMKNames.clear();
   document.getElementById('score-display').textContent='0';resetLives();startRound(1);
 }
 
@@ -862,6 +863,7 @@ function startRound(r){
   const pair=pickPair();
   currentGame=pair.game; currentMK=pair.mk; currentGridWord=pair.gridWord;
   usedPairs.add(pair.key);
+  usedMKNames.add(pair.mk.name);
 
   // Vote banner
   const vt=document.getElementById('vote-title');
@@ -915,7 +917,7 @@ function confirmRestart(){
   gameActive=false;stopTimer();
   ['win-overlay','gameover-overlay','info-overlay'].forEach(id=>document.getElementById(id).classList.remove('show'));
   document.getElementById('splash-overlay').classList.add('hidden');
-  round=1;roundsWon=0;totalScore=0;usedPairs.clear();clearClickChain();
+  round=1;roundsWon=0;totalScore=0;usedPairs.clear();usedMKNames.clear();clearClickChain();
   document.getElementById('score-display').textContent='0';resetLives();startRound(1);
 }
 function showInfo(){document.getElementById('info-overlay').classList.add('show');}
