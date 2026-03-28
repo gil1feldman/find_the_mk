@@ -730,13 +730,36 @@ function resetLives(){lives=MAX_LIVES;updateLivesUI();}
 // ROUND WIN
 // ════════════════════════════════════════
 function calcScore(){const base=timeLeft*round*10;return Math.round(hintUsed?base*0.8:base);}
+const FACTION_SHORT = {
+  'התאחדות הספרדים': 'ש"ס',
+  'ש"ס': 'ש"ס',
+  'הציונות הדתית': 'הציונות הדתית',
+  'עוצמה יהודית': 'עוצמה יהודית',
+  'נעם': 'אבי מעוז',
+};
+
+function shortenFaction(name) {
+  if (!name) return 'אחר';
+  // בדיקה לפי התחלת השם
+  if (name.startsWith('התאחדות הספרדים')) return 'ש"ס';
+  if (name.startsWith('הציונות הדתית'))   return 'הציונות הדתית';
+  if (name.startsWith('עוצמה יהודית'))    return 'עוצמה יהודית';
+  if (name.startsWith('נעם'))             return 'אבי מעוז';
+  // חיתוך לפי " - " או " בראשות"
+  const cutAt = name.indexOf(' בראשות');
+  if (cutAt > 0) return name.slice(0, cutAt).trim();
+  const dashAt = name.indexOf(' - ');
+  if (dashAt > 0) return name.slice(0, dashAt).trim();
+  return name;
+}
+
 function buildFactionSummary(){
   // מונה כמה מכל מפלגה הצביעו לפי ה-type של ההצבעה
   const targetVote=currentGame.type||currentMK.vote;
   const counts={};
   for(const m of currentGame.members){
     if(m.vote!==targetVote) continue;
-    const f=m.faction||'אחר';
+    const f=shortenFaction(m.faction);
     counts[f]=(counts[f]||0)+1;
   }
   const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
