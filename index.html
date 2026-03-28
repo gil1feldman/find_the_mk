@@ -206,6 +206,14 @@
     .vote-banner{padding:5px 10px 5px 34px;}
     .status-bar{padding:4px 12px;}
   }
+
+  /* ── FACTION SUMMARY ── */
+  .faction-list{width:100%;display:flex;flex-direction:column;gap:4px;text-align:right;max-height:220px;overflow-y:auto;}
+  .faction-row{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;background:#f8fafc;}
+  .faction-name{flex:1;font-family:'Assistant',sans-serif;font-size:0.8rem;font-weight:700;color:var(--text);}
+  .faction-bar-wrap{width:80px;height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden;flex-shrink:0;}
+  .faction-bar{height:100%;border-radius:4px;background:var(--knesset);}
+  .faction-count{font-size:0.85rem;font-weight:900;color:var(--knesset);min-width:20px;text-align:center;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -308,6 +316,10 @@
       <div class="stat-box"><div class="val" id="win-nexttime">--</div><div class="lbl">זמן הבא</div></div>
     </div>
     <div class="sheet-sub" id="win-sub"></div>
+    <div id="faction-summary" style="width:100%;display:none;">
+      <div style="font-family:'Assistant',sans-serif;font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:6px;text-align:right;" id="faction-title"></div>
+      <div class="faction-list" id="faction-list"></div>
+    </div>
     <button class="btn-primary" onclick="nextRound()">המשך לסיבוב הבא ←</button>
     <button class="btn-secondary" onclick="finishGame()">סיים ושמור ניקוד</button>
   </div>
@@ -714,6 +726,35 @@ function resetLives(){lives=MAX_LIVES;updateLivesUI();}
 // ROUND WIN
 // ════════════════════════════════════════
 function calcScore(){const base=timeLeft*round*10;return Math.round(hintUsed?base*0.8:base);}
+function buildFactionSummary(){
+  // מונה כמה מכל מפלגה הצביעו לפי ה-type של ההצבעה
+  const targetVote=currentGame.type||currentMK.vote;
+  const counts={};
+  for(const m of currentGame.members){
+    if(m.vote!==targetVote) continue;
+    const f=m.faction||'אחר';
+    counts[f]=(counts[f]||0)+1;
+  }
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  if(!sorted.length) return;
+  const max=sorted[0][1];
+  const typeLabel=TYPE_HEB[targetVote]||'';
+
+  document.getElementById('faction-title').textContent=`מפלגות שהצביעו ${typeLabel} — ${currentGame.shortName||currentGame.title}`;
+  const list=document.getElementById('faction-list');
+  list.innerHTML='';
+  sorted.forEach(([faction,count])=>{
+    const row=document.createElement('div');
+    row.className='faction-row';
+    row.innerHTML=`
+      <div class="faction-count">${count}</div>
+      <div class="faction-name">${faction}</div>
+      <div class="faction-bar-wrap"><div class="faction-bar" style="width:${Math.round((count/max)*100)}%"></div></div>`;
+    list.appendChild(row);
+  });
+  document.getElementById('faction-summary').style.display='block';
+}
+
 function onRoundWin(){
   gameActive=false;stopTimer();roundsWon++;
   const pts=calcScore();totalScore+=pts;
@@ -726,9 +767,14 @@ function onRoundWin(){
   const cfg=getRoundGrid(round+1);
   document.getElementById('win-sub').textContent=
     `${currentMK.name} — ${currentGame.shortName||currentGame.title}\nגריד ${cfg.rows}×${cfg.cols} | ${nextTime} שניות`;
+  buildFactionSummary();
   document.getElementById('win-overlay').classList.add('show');
 }
-function nextRound(){document.getElementById('win-overlay').classList.remove('show');round++;startRound(round);}
+function nextRound(){
+  document.getElementById('win-overlay').classList.remove('show');
+  document.getElementById('faction-summary').style.display='none';
+  round++;startRound(round);
+}
 function finishGame(){document.getElementById('win-overlay').classList.remove('show');showGameOver();}
 
 function showGameOver(){
@@ -766,7 +812,7 @@ function startRound(r){
   // Vote banner
   const vt=document.getElementById('vote-title');
   vt.style.opacity=0;setTimeout(()=>{
-  vt.textContent=`איפה ${currentMK.name}? הצביע/ה ${TYPE_HEB[currentMK.vote]||''} — ${currentGame.shortName||currentGame.title}`;
+  vt.innerHTML=`איפה <span style="color:var(--accent);font-weight:900">${currentMK.name}</span>? הצביע/ה <strong>${TYPE_HEB[currentMK.vote]||''}</strong> — <strong>${currentGame.shortName||currentGame.title}</strong>`;
     vt.style.opacity=1;
   },200);
   const meta=document.getElementById('vote-meta');
@@ -793,8 +839,9 @@ function startRound(r){
 function showSplash(r){
   document.getElementById('splash-badge').textContent=`סיבוב ${r}`;
   const voteLabel=TYPE_HEB[currentMK.vote]||'';
-  document.getElementById('splash-question').textContent=
-    `איפה ${currentMK.name} שבהצבעה בנושא "${currentGame.shortName||currentGame.title}" הצביע/ה ${voteLabel}?`;
+  const title=currentGame.shortName||currentGame.title;
+  document.getElementById('splash-question').innerHTML=
+    `איפה <span style="color:var(--accent);font-weight:900">${currentMK.name}</span> שבהצבעה בנושא <strong>"${title}"</strong> הצביע/ה <strong>${voteLabel}</strong>?`;
   document.getElementById('splash-instruction').textContent=
     `גריד ${getRoundGrid(r).rows}×${getRoundGrid(r).cols} | ${getRoundTime(r)} שניות${currentMK.faction?' | סיעה: '+currentMK.faction:''}`;
   document.getElementById('splash-overlay').classList.remove('hidden');
