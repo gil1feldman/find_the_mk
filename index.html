@@ -766,7 +766,7 @@ function startRound(r){
   // Vote banner
   const vt=document.getElementById('vote-title');
   vt.style.opacity=0;setTimeout(()=>{
-    vt.textContent=`${currentMK.name} — ${currentGame.shortName||currentGame.title}`;
+  vt.textContent=`איפה ${currentMK.name}? הצביע/ה ${TYPE_HEB[currentMK.vote]||''} — ${currentGame.shortName||currentGame.title}`;
     vt.style.opacity=1;
   },200);
   const meta=document.getElementById('vote-meta');
@@ -794,7 +794,7 @@ function showSplash(r){
   document.getElementById('splash-badge').textContent=`סיבוב ${r}`;
   const voteLabel=TYPE_HEB[currentMK.vote]||'';
   document.getElementById('splash-question').textContent=
-    `מצא את ${currentMK.name} שהצביע ${voteLabel} — ${currentGame.shortName||currentGame.title}`;
+    `איפה ${currentMK.name} שבהצבעה בנושא "${currentGame.shortName||currentGame.title}" הצביע/ה ${voteLabel}?`;
   document.getElementById('splash-instruction').textContent=
     `גריד ${getRoundGrid(r).rows}×${getRoundGrid(r).cols} | ${getRoundTime(r)} שניות${currentMK.faction?' | סיעה: '+currentMK.faction:''}`;
   document.getElementById('splash-overlay').classList.remove('hidden');
