@@ -1,1 +1,1283 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מצא את המצביעים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --knesset:  #1a3a5c;
+    --gold:     #d4a843;
+    --accent:   #e63946;
+    --green:    #2dc653;
+    --sky:      #e8f4fd;
+    --white:    #ffffff;
+    --text:     #1e293b;
+    --muted:    #64748b;
+    --shadow:   0 4px 24px rgba(0,0,0,0.10);
+    --r-sm:     10px;
+    --cell-size: 34px;
+    --grid-font: 0.82rem;
 
+    /* צבעים לח"כים שנמצאו */
+    --mk-color-0: #2dc653;
+    --mk-color-1: #2563eb;
+    --mk-color-2: #e63946;
+    --mk-color-3: #f59e0b;
+    --mk-color-4: #8b5cf6;
+    --mk-color-5: #06b6d4;
+    --mk-color-6: #ec4899;
+    --mk-color-7: #10b981;
+    --mk-color-8: #f97316;
+    --mk-color-9: #6366f1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    font-family: 'Rubik', sans-serif;
+    background: linear-gradient(180deg, #a8d8f0 0%, #c9e8f8 30%, var(--sky) 60%);
+    color: var(--text);
+    overflow: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .game-wrapper {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px 0;
+    height: 100dvh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .title {
+    font-size: clamp(1.2rem, 3.5vw, 1.7rem);
+    font-weight: 900;
+    color: var(--knesset);
+    line-height: 1;
+  }
+  .icon-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: transform 0.15s;
+    line-height: 1;
+  }
+  .icon-btn:hover { transform: scale(1.2); }
+
+  /* ── VOTE BANNER ── */
+  .vote-banner {
+    width: 100%;
+    background: var(--white);
+    border: 2px solid rgba(26,58,92,0.12);
+    border-right: 4px solid var(--knesset);
+    border-radius: var(--r-sm);
+    padding: 8px 12px 8px 12px;
+    box-shadow: var(--shadow);
+  }
+  .vote-label {
+    font-family: 'Assistant', sans-serif;
+    font-size: 0.52rem;
+    color: var(--knesset);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+    font-weight: 700;
+    opacity: 0.6;
+  }
+  .vote-title {
+    font-size: clamp(0.78rem, 2.2vw, 0.95rem);
+    font-weight: 700;
+    color: var(--knesset);
+    line-height: 1.35;
+  }
+  .vote-meta {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .vote-pill {
+    font-family: 'Assistant', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 20px;
+    background: #f1f5f9;
+    color: var(--muted);
+  }
+  .vote-pill.for     { background: rgba(45,198,83,0.12);  color: #15803d; }
+  .vote-pill.against { background: rgba(230,57,70,0.10);  color: #b91c1c; }
+  .vote-pill.abstain { background: rgba(245,158,11,0.10); color: #92400e; }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: var(--white);
+    border-radius: var(--r-sm);
+    padding: 6px 12px;
+    box-shadow: var(--shadow);
+    gap: 8px;
+  }
+  .stat-block { display: flex; flex-direction: column; align-items: center; }
+  .stat-label {
+    font-family: 'Assistant', sans-serif;
+    font-size: 0.5rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+  .stat-val {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--knesset);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-val.timer-urgent { color: var(--accent); animation: pulse-timer 0.6s ease infinite; }
+  @keyframes pulse-timer { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+  /* ── MK CHIPS ── */
+  .mk-list {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+  }
+  .mk-chip {
+    font-family: 'Assistant', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 2px solid;
+    transition: all 0.3s;
+    white-space: nowrap;
+    opacity: 0.45;
+  }
+  .mk-chip.found {
+    opacity: 1;
+    animation: chip-pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes chip-pop {
+    0%  { transform: scale(0.85); }
+    60% { transform: scale(1.15); }
+    100%{ transform: scale(1); }
+  }
+
+  /* ── GRID ── */
+  .grid-container {
+    direction: ltr;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+  }
+  .grid {
+    display: inline-grid;
+    gap: 2px;
+    user-select: none;
+    touch-action: none;
+  }
+  .cell {
+    width: var(--cell-size);
+    height: var(--cell-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--grid-font);
+    font-weight: 700;
+    color: var(--text);
+    background: var(--white);
+    border: 1.5px solid #dde4ef;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s, transform 0.1s, border-color 0.1s;
+    box-shadow: 0 1px 3px rgba(26,58,92,0.07);
+    position: relative;
+  }
+  .cell:hover { background: var(--sky); border-color: var(--knesset); }
+  .cell.selected {
+    background: rgba(212,168,67,0.2);
+    border-color: var(--gold);
+    color: #92620a;
+    transform: scale(1.07);
+    z-index: 2;
+    box-shadow: 0 0 0 2px rgba(212,168,67,0.3);
+  }
+
+  /* צבעים דינמיים לח"כים שנמצאו */
+  .cell.found-0 { background: rgba(45,198,83,0.15);  border-color: rgba(45,198,83,0.5);  color: #15803d; font-weight: 800; }
+  .cell.found-1 { background: rgba(37,99,235,0.12);  border-color: rgba(37,99,235,0.5);  color: #1d4ed8; font-weight: 800; }
+  .cell.found-2 { background: rgba(230,57,70,0.12);  border-color: rgba(230,57,70,0.5);  color: #b91c1c; font-weight: 800; }
+  .cell.found-3 { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.5); color: #92400e; font-weight: 800; }
+  .cell.found-4 { background: rgba(139,92,246,0.12); border-color: rgba(139,92,246,0.5); color: #6d28d9; font-weight: 800; }
+  .cell.found-5 { background: rgba(6,182,212,0.12);  border-color: rgba(6,182,212,0.5);  color: #0e7490; font-weight: 800; }
+  .cell.found-6 { background: rgba(236,72,153,0.12); border-color: rgba(236,72,153,0.5); color: #9d174d; font-weight: 800; }
+  .cell.found-7 { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.5); color: #065f46; font-weight: 800; }
+  .cell.found-8 { background: rgba(249,115,22,0.12); border-color: rgba(249,115,22,0.5); color: #c2410c; font-weight: 800; }
+  .cell.found-9 { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.5); color: #4338ca; font-weight: 800; }
+
+  @keyframes pulse-found {
+    0%  { transform: scale(1); }
+    50% { transform: scale(1.13); }
+    100%{ transform: scale(1); }
+  }
+  .cell.just-found { animation: pulse-found 0.5s ease; }
+
+  .grid.shake { animation: shake 0.45s ease; }
+  @keyframes shake {
+    0%   { transform: translateX(0); }
+    20%  { transform: translateX(-9px); }
+    40%  { transform: translateX(9px); }
+    60%  { transform: translateX(-6px); }
+    80%  { transform: translateX(6px); }
+    100% { transform: translateX(0); }
+  }
+
+  /* ── OVERLAYS ── */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,30,60,0.75);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .overlay.show { display: flex; animation: fade-in 0.3s ease; }
+  @keyframes fade-in { from{opacity:0} to{opacity:1} }
+
+  .sheet {
+    background: var(--white);
+    border-radius: 28px 28px 0 0;
+    padding: 20px 22px calc(32px + env(safe-area-inset-bottom,0px));
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-height: 90dvh;
+    overflow-y: auto;
+  }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .sheet-handle { width: 40px; height: 4px; background: #e2e8f0; border-radius: 4px; }
+  .sheet-emoji  { font-size: 2.8rem; }
+  .sheet-title  { font-size: 1.6rem; font-weight: 900; color: var(--knesset); line-height: 1.1; }
+  .sheet-sub    { font-family: 'Assistant', sans-serif; font-size: 0.95rem; color: var(--muted); font-weight: 600; line-height: 1.5; }
+
+  .stats-row { display: flex; gap: 10px; width: 100%; }
+  .stat-box {
+    flex: 1; background: #f8fafc; border-radius: 12px; padding: 10px 6px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .stat-box .val { font-size: 1.6rem; font-weight: 900; color: var(--knesset); line-height: 1; }
+  .stat-box .lbl { font-family: 'Assistant', sans-serif; font-size: 0.6rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+
+  .btn-primary {
+    width: 100%; background: var(--knesset); color: var(--white);
+    border: none; border-radius: 14px; padding: 14px;
+    font-size: 1rem; font-weight: 800; cursor: pointer;
+    font-family: 'Rubik', sans-serif;
+    box-shadow: 0 6px 0 #0d2240, var(--shadow);
+    transition: all 0.1s; position: relative; top: 0;
+  }
+  .btn-primary:active { top: 6px; box-shadow: 0 0 0 transparent; }
+  .btn-secondary {
+    width: 100%; background: transparent; border: 2px solid #e2e8f0;
+    border-radius: 14px; color: var(--muted); font-size: 0.9rem;
+    font-weight: 700; padding: 11px; cursor: pointer;
+    font-family: 'Rubik', sans-serif; transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--knesset); color: var(--knesset); }
+
+  /* ── WIN MK LIST ── */
+  .win-mk-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    text-align: right;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .win-mk-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-family: 'Assistant', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .win-mk-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .win-mk-name { flex: 1; color: var(--text); }
+  .win-mk-faction { color: var(--muted); font-weight: 500; font-size: 0.75rem; }
+
+  /* ── WELCOME ── */
+  .welcome-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    background: linear-gradient(160deg, #0d2240 0%, #1a3a5c 60%, #1e4976 100%);
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    transition: opacity 0.4s ease;
+  }
+  .welcome-overlay.hidden { opacity: 0; pointer-events: none; }
+  .welcome-card {
+    background: var(--white); border-radius: 28px;
+    padding: 32px 28px 28px; max-width: 400px; width: 100%;
+    text-align: center; display: flex; flex-direction: column;
+    align-items: center; gap: 16px;
+    animation: popIn 0.45s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+  }
+  @keyframes popIn { from{opacity:0;transform:scale(0.88)} to{opacity:1;transform:scale(1)} }
+  .welcome-logo { font-size: 3rem; line-height: 1; }
+  .welcome-title { font-size: clamp(1.8rem, 6vw, 2.4rem); font-weight: 900; color: var(--knesset); line-height: 1; }
+  .welcome-tagline {
+    font-family: 'Assistant', sans-serif; font-size: 0.9rem; color: var(--muted);
+    font-weight: 600; line-height: 1.5; border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0; padding: 10px 4px; width: 100%;
+  }
+  .welcome-steps { width: 100%; display: flex; flex-direction: column; gap: 7px; text-align: right; }
+  .welcome-step {
+    display: flex; gap: 10px; align-items: center;
+    background: #f8fafc; border-radius: 10px; padding: 8px 12px;
+  }
+  .welcome-step-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .welcome-step-text { font-family: 'Assistant', sans-serif; font-size: 0.82rem; color: var(--muted); font-weight: 600; line-height: 1.4; }
+  .welcome-step-text strong { color: var(--text); font-family: 'Rubik', sans-serif; font-weight: 800; }
+  .welcome-btn {
+    width: 100%; background: var(--accent); color: var(--white);
+    border: none; border-radius: 16px; padding: 15px;
+    font-size: 1.05rem; font-weight: 900; cursor: pointer;
+    font-family: 'Rubik', sans-serif;
+    box-shadow: 0 6px 0 #9b1c26, 0 8px 24px rgba(230,57,70,0.35);
+    transition: all 0.1s; position: relative; top: 0;
+  }
+  .welcome-btn:active { top: 6px; box-shadow: 0 0 0 transparent; }
+
+  /* ── LOADING SCREEN ── */
+  .loading-screen {
+    position: fixed; inset: 0; z-index: 300;
+    background: linear-gradient(160deg, #0d2240 0%, #1a3a5c 60%);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 20px;
+    transition: opacity 0.4s ease;
+  }
+  .loading-screen.hidden { opacity: 0; pointer-events: none; }
+  .load-bars { display: flex; align-items: flex-end; gap: 5px; height: 44px; }
+  .load-bars span {
+    border-radius: 4px 4px 0 0; width: 12px;
+    animation: barPulse 1.2s ease-in-out infinite;
+  }
+  .load-bars span:nth-child(1) { height: 44px; background: var(--knesset); animation-delay: 0s; }
+  .load-bars span:nth-child(2) { height: 34px; background: var(--gold);    animation-delay: 0.15s; }
+  .load-bars span:nth-child(3) { height: 24px; background: var(--accent);  animation-delay: 0.3s; }
+  @keyframes barPulse { 0%,100%{opacity:1;transform:scaleY(1)} 50%{opacity:0.5;transform:scaleY(0.75)} }
+  .load-title { color: #fff; font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px; }
+  .load-msg   { color: rgba(255,255,255,0.6); font-family: 'Assistant', sans-serif; font-size: 0.9rem; }
+  .load-spinner {
+    width: 36px; height: 36px;
+    border: 3px solid rgba(255,255,255,0.15);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .load-error {
+    color: #fca5a5; font-family: 'Assistant', sans-serif; font-size: 0.9rem;
+    background: rgba(230,57,70,0.15); border: 1px solid rgba(230,57,70,0.3);
+    border-radius: 10px; padding: 12px 16px; max-width: 320px; text-align: center;
+    line-height: 1.6;
+  }
+  .load-retry {
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 12px; padding: 10px 24px;
+    font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  @media (max-height: 700px) {
+    .game-wrapper { gap: 4px; padding-top: 5px; }
+    .vote-banner  { padding: 5px 10px; }
+    .status-bar   { padding: 4px 10px; }
+    .mk-list      { gap: 3px; }
+    .mk-chip      { font-size: 0.65rem; padding: 2px 7px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOADING SCREEN ═══ -->
+<div class="loading-screen" id="loading-screen">
+  <div class="load-bars"><span></span><span></span><span></span></div>
+  <div class="load-title">מצא את המצביעים</div>
+  <div class="load-spinner" id="load-spinner"></div>
+  <div class="load-msg" id="load-msg">טוען נתוני הצבעות...</div>
+  <div class="load-error" id="load-error" style="display:none"></div>
+  <button class="load-retry" id="load-retry" style="display:none" onclick="init()">🔄 נסה שוב</button>
+</div>
+
+<!-- ═══ WELCOME SCREEN ═══ -->
+<div class="welcome-overlay hidden" id="welcome-overlay">
+  <div class="welcome-card">
+    <div class="welcome-logo">🔍</div>
+    <div class="welcome-title">מצא את המצביעים</div>
+    <div class="welcome-tagline">
+      מצא בגריד את שמות חברי הכנסת<br>שהצביעו על חוקים בכנסת
+    </div>
+    <div class="welcome-steps">
+      <div class="welcome-step">
+        <span class="welcome-step-icon">🗳️</span>
+        <div class="welcome-step-text">קרא את <strong>נושא ההצבעה</strong> ומי אמור להסתתר בגריד</div>
+      </div>
+      <div class="welcome-step">
+        <span class="welcome-step-icon">👆</span>
+        <div class="welcome-step-text">גרור או לחץ אות-אות — <strong>אופקי, אנכי ואלכסוני</strong> בכל כיוון</div>
+      </div>
+      <div class="welcome-step">
+        <span class="welcome-step-icon">🎨</span>
+        <div class="welcome-step-text">כל ח"כ שנמצא מקבל <strong>צבע משלו</strong> — מצא את כולם!</div>
+      </div>
+      <div class="welcome-step">
+        <span class="welcome-step-icon">⏱️</span>
+        <div class="welcome-step-text">הטיימר סופר כמה זמן לקח — <strong>כמה מהר תמצא את כולם?</strong></div>
+      </div>
+    </div>
+    <button class="welcome-btn" onclick="dismissWelcome()">▶&nbsp;&nbsp;התחל לשחק!</button>
+  </div>
+</div>
+
+<!-- ═══ GAME UI ═══ -->
+<div class="game-wrapper">
+
+  <div class="header">
+    <div style="display:flex;gap:4px;">
+      <button class="icon-btn" onclick="confirmRestart()" title="הצבעה אחרת">↺</button>
+    </div>
+    <div class="title">🔍 מצא את המצביעים</div>
+    <div style="display:flex;gap:4px;">
+      <button class="icon-btn" onclick="showInfo()" title="הוראות" style="font-style:italic;font-weight:900;font-family:'Rubik',sans-serif;font-size:1rem;">i</button>
+    </div>
+  </div>
+
+  <div class="vote-banner" id="vote-banner">
+    <div class="vote-label">נושא ההצבעה</div>
+    <div class="vote-title" id="vote-title">...</div>
+    <div class="vote-meta" id="vote-meta"></div>
+  </div>
+
+  <div class="status-bar">
+    <div class="stat-block">
+      <div class="stat-label">זמן</div>
+      <div class="stat-val" id="timer-display">0:00</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-label">נמצאו</div>
+      <div class="stat-val" id="found-display">0/0</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-label">נותרו</div>
+      <div class="stat-val" id="remain-display">0</div>
+    </div>
+  </div>
+
+  <!-- רשימת שמות ח"כים -->
+  <div class="mk-list" id="mk-list"></div>
+
+  <!-- גריד -->
+  <div class="grid-container">
+    <div class="grid" id="grid"></div>
+  </div>
+
+</div>
+
+<!-- Win overlay -->
+<div class="overlay" id="win-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-emoji">🏆</div>
+    <div class="sheet-title">מצאת את כולם!</div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="val" id="win-time">0:00</div><div class="lbl">זמן</div></div>
+      <div class="stat-box"><div class="val" id="win-found">0</div><div class="lbl">ח"כים</div></div>
+    </div>
+    <div class="sheet-sub" id="win-sub"></div>
+    <div class="win-mk-list" id="win-mk-list"></div>
+    <button class="btn-primary" onclick="restartGame()">🔀 הצבעה אחרת</button>
+    <button class="btn-secondary" onclick="document.getElementById('win-overlay').classList.remove('show')">סגור</button>
+  </div>
+</div>
+
+<!-- Info overlay -->
+<div class="overlay" id="info-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" style="font-size:1.2rem;">איך משחקים?</div>
+    <div style="width:100%;display:flex;flex-direction:column;gap:8px;text-align:right;">
+      <div class="welcome-step">
+        <span class="welcome-step-icon">🗳️</span>
+        <div class="welcome-step-text">קרא את <strong>נושא ההצבעה</strong> ומי הצביע בה — ומצא אותם בגריד האותיות.</div>
+      </div>
+      <div class="welcome-step">
+        <span class="welcome-step-icon">👆</span>
+        <div class="welcome-step-text">גרור עם האצבע/עכבר, או <strong>לחץ אות-אות</strong> — <strong>אופקי, אנכי ואלכסוני</strong> בכל כיוון.</div>
+      </div>
+      <div class="welcome-step">
+        <span class="welcome-step-icon">🎨</span>
+        <div class="welcome-step-text">כל ח"כ שנמצא מודגש ב<strong>צבע ייחודי</strong> — מצא את כל מי שמופיע ברשימה.</div>
+      </div>
+      <div class="welcome-step">
+        <span class="welcome-step-icon">⏱️</span>
+        <div class="welcome-step-text">הטיימר סופר מהרגע שהמשחק מתחיל — נסה לשבור את השיא שלך!</div>
+      </div>
+      <div class="welcome-step">
+        <span class="welcome-step-icon">↺</span>
+        <div class="welcome-step-text">לחץ <strong>↺</strong> בכל עת לטעינת הצבעה אחרת.</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="document.getElementById('info-overlay').classList.remove('show')">הבנתי!</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw7mtU_4w7tz6Iz4VPAkO5eUdEnil2PsiLpo17zscAJNxMJml7p5qBr9wJifIgiYlpy/exec";
+const KNESSET_BASES   = [
+  "https://www.knesset.gov.il",
+  "https://knesset.gov.il",
+  "https://main.knesset.gov.il",
+];
+const DETAIL_PATH = "/WebSiteApi/knessetapi/Votes/GetVoteDetails/";
+const CACHE_KEY   = "mk-wordsearch-cache-v1";
+
+const HEB = 'אבגדהוזחטיכלמנסעפצקרשת';
+const FINAL_TO_REG = { 'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ' };
+const MK_COLORS = [
+  { bg:'rgba(45,198,83,0.15)',  border:'rgba(45,198,83,0.5)',  text:'#15803d'  },
+  { bg:'rgba(37,99,235,0.12)',  border:'rgba(37,99,235,0.5)',  text:'#1d4ed8'  },
+  { bg:'rgba(230,57,70,0.12)',  border:'rgba(230,57,70,0.5)',  text:'#b91c1c'  },
+  { bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.5)', text:'#92400e'  },
+  { bg:'rgba(139,92,246,0.12)', border:'rgba(139,92,246,0.5)', text:'#6d28d9'  },
+  { bg:'rgba(6,182,212,0.12)',  border:'rgba(6,182,212,0.5)',  text:'#0e7490'  },
+  { bg:'rgba(236,72,153,0.12)', border:'rgba(236,72,153,0.5)', text:'#9d174d'  },
+  { bg:'rgba(16,185,129,0.12)', border:'rgba(16,185,129,0.5)', text:'#065f46'  },
+  { bg:'rgba(249,115,22,0.12)', border:'rgba(249,115,22,0.5)', text:'#c2410c'  },
+  { bg:'rgba(99,102,241,0.12)', border:'rgba(99,102,241,0.5)', text:'#4338ca'  },
+];
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function readCache()   { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch { return {}; } }
+function writeCache(d) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch {} }
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function toGridWord(str) {
+  return str.replace(/\s+/g, '').replace(/[ךםןףץ]/g, l => FINAL_TO_REG[l] || l);
+}
+
+function normalizeVote(title) {
+  if (!title) return null;
+  const t = title.trim();
+  if (t === 'בעד')  return 'for';
+  if (t === 'נגד')  return 'against';
+  if (t === 'נמנע' || t === 'נמנע/נעדר' || t === 'נעדר') return 'abstain';
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let allGames      = [];   // [{voteId, title, shortName, date, decision, members:[{name,vote,faction}]}]
+let currentGame   = null; // game object currently in play
+let currentMKs    = [];   // [{name, gridWord, colorIdx, found}]
+let grid          = [];   // 2D array of letters
+let rows = 0, cols = 0;
+let mkCells       = {};   // gridWord -> Set of "r,c" keys
+let foundCount    = 0;
+let timerInterval = null;
+let timerSeconds  = 0;
+let gameActive    = false;
+
+// Selection state
+let selectedCells = [];
+let isDragging    = false;
+let selectStart   = null;
+let clickChain    = [];
+let clickMode     = false;
+let _pendingDrag  = null;
+
+// ═══════════════════════════════════════════════════════════
+// DATA LOADING
+// ═══════════════════════════════════════════════════════════
+async function fetchSheetRows() {
+  const resp = await fetch(APPS_SCRIPT_URL);
+  const data = await resp.json();
+  if (!Array.isArray(data)) throw new Error('שגיאה בטעינת הנתונים מהגיליון');
+  return data
+    .filter(r => r.voteId && /^\d+$/.test(r.voteId))
+    .map(r => ({
+      ...r,
+      shortName: (r.shortName || r.short_name || '').trim(),
+      type: (r.type || '').trim()
+    }));
+}
+
+async function fetchVoteDetails(voteId) {
+  for (const base of KNESSET_BASES) {
+    try {
+      const r = await fetch(base + DETAIL_PATH + voteId, { mode: 'cors' });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+      if (data?.VoteDetails) return data;
+    } catch (_) {}
+    await sleep(200);
+  }
+  throw new Error(`שגיאה בטעינת הצבעה ${voteId}`);
+}
+
+function buildGame(row, data) {
+  const header  = data.VoteHeader?.[0] || {};
+  const targetVote = row.type; // 'for' | 'against' | 'abstain' | '' (all)
+  const members = (data.VoteDetails || [])
+    .filter(d => {
+      const v = normalizeVote(d.Title);
+      if (!v) return false;
+      if (!targetVote) return true;
+      return v === targetVote;
+    })
+    .map(d => ({
+      name:    (d.MkName || '').trim(),
+      vote:    normalizeVote(d.Title),
+      faction: (d.FactionName || '').trim(),
+    }))
+    .filter(m => m.name.length > 0);
+
+  if (members.length < 2) return null;
+  return {
+    voteId:    row.voteId,
+    title:     header.ItemTitle   || 'ללא כותרת',
+    shortName: row.shortName      || '',
+    date:      header.VoteDateStr || '',
+    decision:  header.Decision    || '',
+    targetVote: row.type,
+    members,
+  };
+}
+
+function setLoadMsg(msg) {
+  document.getElementById('load-msg').textContent = msg;
+}
+function showLoadError(msg) {
+  document.getElementById('load-spinner').style.display = 'none';
+  document.getElementById('load-msg').style.display = 'none';
+  document.getElementById('load-error').textContent = msg;
+  document.getElementById('load-error').style.display = 'block';
+  document.getElementById('load-retry').style.display = 'inline-block';
+}
+
+async function init() {
+  document.getElementById('loading-screen').classList.remove('hidden');
+  document.getElementById('load-spinner').style.display = 'block';
+  document.getElementById('load-msg').style.display = 'block';
+  document.getElementById('load-error').style.display = 'none';
+  document.getElementById('load-retry').style.display = 'none';
+  setLoadMsg('טוען נתוני הצבעות...');
+
+  try {
+    const rows  = await fetchSheetRows();
+    if (!rows.length) throw new Error('לא נמצאו הצבעות בגיליון');
+    setLoadMsg('מוריד פרטי הצבעות...');
+
+    const cache = readCache();
+    // Load up to 8 games in parallel, prefer cached
+    const shuffled = shuffle(rows);
+    const toLoad   = [];
+    const loaded   = [];
+
+    for (const row of shuffled) {
+      if (cache[row.voteId]) {
+        loaded.push(cache[row.voteId]);
+      } else {
+        toLoad.push(row);
+      }
+      if (loaded.length + toLoad.length >= 8) break;
+    }
+
+    const fetched = await Promise.all(
+      toLoad.map(async row => {
+        try {
+          const data = await fetchVoteDetails(row.voteId);
+          return buildGame(row, data);
+        } catch { return null; }
+      })
+    );
+
+    fetched.filter(Boolean).forEach(g => { cache[g.voteId] = g; });
+    writeCache(cache);
+
+    allGames = shuffle([...loaded, ...fetched.filter(Boolean)]);
+    if (!allGames.length) throw new Error('לא הצלחנו לטעון הצבעות תקינות. נסה שוב.');
+
+    document.getElementById('loading-screen').classList.add('hidden');
+    document.getElementById('welcome-overlay').classList.remove('hidden');
+
+  } catch (e) {
+    showLoadError(e.message || 'שגיאה בטעינה');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// GAME SETUP
+// ═══════════════════════════════════════════════════════════
+function pickGame() {
+  if (!allGames.length) return null;
+  // Remove current from front to avoid repeat
+  const pool = currentGame
+    ? allGames.filter(g => g.voteId !== currentGame.voteId)
+    : allGames;
+  return (pool.length ? pool : allGames)[Math.floor(Math.random() * (pool.length || allGames.length))];
+}
+
+function calcGridSize(mkCount) {
+  // Need enough room for all names; be generous
+  const screenW = window.innerWidth - 20;
+  const screenH = window.innerHeight;
+  // Rough estimate: each MK name ~5-8 chars; grid should be at least 12x14
+  const baseRows = Math.min(14, Math.max(10, 8 + Math.ceil(mkCount / 2)));
+  const baseCols = Math.min(12, Math.max(10, 8 + Math.ceil(mkCount / 3)));
+
+  // Calculate panel heights above grid
+  const panelH = 260; // header + banner + status + chips
+  const availH = screenH - panelH;
+  const availW = Math.min(screenW, 700) - 20;
+
+  const byW = Math.floor((availW - (baseCols - 1) * 2) / baseCols);
+  const byH = Math.floor((availH - (baseRows - 1) * 2) / baseRows);
+  const cellSize = Math.max(20, Math.min(byW, byH, 38));
+  const fontSize = cellSize >= 30 ? '0.82rem' : cellSize >= 24 ? '0.7rem' : '0.6rem';
+
+  return { rows: baseRows, cols: baseCols, cellSize, fontSize };
+}
+
+function startGame(game) {
+  stopTimer();
+  currentGame  = game;
+  foundCount   = 0;
+  gameActive   = false;
+  clickChain   = [];
+  clickMode    = false;
+  selectedCells = [];
+
+  // Pick MKs to hide (max 10, shuffled)
+  const pool = shuffle(game.members).slice(0, 10);
+  currentMKs = pool.map((mk, i) => ({
+    ...mk,
+    gridWord: toGridWord(mk.name),
+    colorIdx: i % MK_COLORS.length,
+    found: false,
+  })).filter(mk => mk.gridWord.length >= 2);
+
+  if (!currentMKs.length) {
+    // No valid MKs — try another game
+    const next = pickGame();
+    if (next) startGame(next);
+    return;
+  }
+
+  // Render vote banner
+  const voteTypeLabel = { for:'הצביעו בעד', against:'הצביעו נגד', abstain:'נמנעו' };
+  const typeClass     = { for:'for', against:'against', abstain:'abstain' };
+  document.getElementById('vote-title').textContent = game.shortName || game.title;
+  const meta = document.getElementById('vote-meta');
+  meta.innerHTML = '';
+  if (game.targetVote) {
+    const pill = document.createElement('span');
+    pill.className = `vote-pill ${typeClass[game.targetVote] || ''}`;
+    pill.textContent = voteTypeLabel[game.targetVote] || game.targetVote;
+    meta.appendChild(pill);
+  }
+  if (game.date) {
+    const d = document.createElement('span');
+    d.className = 'vote-pill';
+    d.textContent = '📅 ' + game.date;
+    meta.appendChild(d);
+  }
+
+  // Render MK chips
+  renderChips();
+
+  // Build grid
+  const cfg = calcGridSize(currentMKs.length);
+  rows = cfg.rows; cols = cfg.cols;
+  document.documentElement.style.setProperty('--cell-size', cfg.cellSize + 'px');
+  document.documentElement.style.setProperty('--grid-font', cfg.fontSize);
+  generateGrid();
+  renderGrid();
+  updateStatus();
+
+  // Start timer
+  timerSeconds = 0;
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+  gameActive = true;
+}
+
+function renderChips() {
+  const list = document.getElementById('mk-list');
+  list.innerHTML = '';
+  currentMKs.forEach((mk, i) => {
+    const c   = MK_COLORS[mk.colorIdx];
+    const chip = document.createElement('span');
+    chip.className   = 'mk-chip';
+    chip.id          = `chip-${i}`;
+    chip.textContent = mk.name;
+    chip.style.color       = c.text;
+    chip.style.borderColor = c.border;
+    chip.style.background  = c.bg;
+    list.appendChild(chip);
+  });
+}
+
+function updateStatus() {
+  const total = currentMKs.length;
+  document.getElementById('found-display').textContent  = `${foundCount}/${total}`;
+  document.getElementById('remain-display').textContent = total - foundCount;
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+  document.getElementById('timer-display').textContent = `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// GRID GENERATION
+// ═══════════════════════════════════════════════════════════
+function generateGrid() {
+  grid = Array.from({ length: rows }, () => Array(cols).fill(''));
+  mkCells = {};
+
+  const dirs = [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+
+  for (const mk of currentMKs) {
+    const word = mk.gridWord;
+    const maxLen = Math.max(rows, cols);
+    if (word.length > maxLen) { mk.gridWord = word.slice(0, maxLen); }
+    let placed = false, attempts = 0;
+    while (!placed && attempts < 400) {
+      attempts++;
+      const [dr, dc] = dirs[Math.floor(Math.random() * dirs.length)];
+      const sr = Math.floor(Math.random() * rows);
+      const sc = Math.floor(Math.random() * cols);
+      const er = sr + dr * (word.length - 1);
+      const ec = sc + dc * (word.length - 1);
+      if (er < 0 || er >= rows || ec < 0 || ec >= cols) continue;
+      let ok = true;
+      for (let i = 0; i < word.length; i++) {
+        const r = sr + dr * i, c = sc + dc * i;
+        if (grid[r][c] !== '' && grid[r][c] !== word[i]) { ok = false; break; }
+      }
+      if (!ok) continue;
+      const cellSet = new Set();
+      for (let i = 0; i < word.length; i++) {
+        const r = sr + dr * i, c = sc + dc * i;
+        grid[r][c] = word[i];
+        cellSet.add(`${r},${c}`);
+      }
+      mkCells[word] = cellSet;
+      placed = true;
+    }
+    if (!placed) {
+      // Remove this MK if we can't place it
+      mk._failed = true;
+    }
+  }
+
+  // Remove failed MKs
+  const before = currentMKs.length;
+  currentMKs = currentMKs.filter(m => !m._failed);
+  if (currentMKs.length < before) renderChips();
+
+  // Fill blanks
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++)
+      if (grid[r][c] === '') grid[r][c] = HEB[Math.floor(Math.random() * HEB.length)];
+}
+
+// ═══════════════════════════════════════════════════════════
+// GRID RENDER
+// ═══════════════════════════════════════════════════════════
+function renderGrid() {
+  const el = document.getElementById('grid');
+  el.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`;
+  el.className = 'grid';
+  el.innerHTML = '';
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cell = document.createElement('div');
+      cell.className   = 'cell';
+      cell.textContent = grid[r][c];
+      cell.dataset.r   = r;
+      cell.dataset.c   = c;
+
+      // Mouse
+      cell.addEventListener('mousedown', e => {
+        e.preventDefault();
+        _pendingDrag = { r, c };
+      });
+      cell.addEventListener('mouseenter', () => {
+        if (_pendingDrag && !isDragging) {
+          clearClickChain();
+          startSel(_pendingDrag.r, _pendingDrag.c);
+          _pendingDrag = null;
+        }
+        if (isDragging) extendSel(r, c);
+      });
+      cell.addEventListener('mouseup', () => {
+        if (isDragging) {
+          endSel();
+        } else if (_pendingDrag) {
+          _pendingDrag = null;
+          handleCellClick(r, c);
+        }
+      });
+
+      // Touch
+      cell.addEventListener('touchstart', e => {
+        e.preventDefault();
+        _pendingDrag = { r, c };
+      }, { passive: false });
+      cell.addEventListener('touchmove', e => {
+        e.preventDefault();
+        const t  = e.touches[0];
+        const target = document.elementFromPoint(t.clientX, t.clientY);
+        if (!target || !target.classList.contains('cell')) return;
+        const tr = +target.dataset.r, tc = +target.dataset.c;
+        if (_pendingDrag && !isDragging) {
+          if (tr !== _pendingDrag.r || tc !== _pendingDrag.c) {
+            clearClickChain();
+            startSel(_pendingDrag.r, _pendingDrag.c);
+            _pendingDrag = null;
+            extendSel(tr, tc);
+          }
+        } else if (isDragging) {
+          extendSel(tr, tc);
+        }
+      }, { passive: false });
+      cell.addEventListener('touchend', () => {
+        if (isDragging) {
+          endSel();
+        } else if (_pendingDrag) {
+          _pendingDrag = null;
+          handleCellClick(r, c);
+        }
+      });
+
+      el.appendChild(cell);
+    }
+  }
+}
+
+function getCellEl(r, c) {
+  return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// SELECTION — CLICK MODE
+// ═══════════════════════════════════════════════════════════
+function isAdjacent(r1, c1, r2, c2) {
+  return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && !(r1 === r2 && c1 === c2);
+}
+
+function handleCellClick(r, c) {
+  if (!gameActive) return;
+  if (clickChain.length === 0) {
+    clickChain = [{ r, c }];
+    clickMode  = true;
+    updateSelUI();
+    return;
+  }
+  const head = clickChain[0];
+  const tail = clickChain[clickChain.length - 1];
+  const inChain  = clickChain.some(p => p.r === r && p.c === c);
+  if (inChain) {
+    clickChain = [{ r, c }];
+    clickMode  = true;
+    updateSelUI();
+    return;
+  }
+  const adjToTail = isAdjacent(tail.r, tail.c, r, c);
+  const adjToHead = isAdjacent(head.r, head.c, r, c);
+  if (adjToTail || adjToHead) {
+    if (adjToTail) clickChain.push({ r, c });
+    else           clickChain.unshift({ r, c });
+    clickMode     = true;
+    selectedCells = [...clickChain];
+    updateSelUI();
+    checkSel();
+  } else {
+    clickChain = [{ r, c }];
+    clickMode  = true;
+    updateSelUI();
+  }
+}
+
+function clearClickChain() {
+  clickChain = [];
+  clickMode  = false;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SELECTION — DRAG MODE
+// ═══════════════════════════════════════════════════════════
+function startSel(r, c) {
+  if (!gameActive) return;
+  clearClickChain();
+  isDragging   = true;
+  selectStart  = { r, c };
+  selectedCells = [{ r, c }];
+  updateSelUI();
+}
+
+function extendSel(r, c) {
+  if (!isDragging || !selectStart) return;
+  const dr = r - selectStart.r, dc = c - selectStart.c;
+  let nr = 0, nc = 0;
+  if      (dr === 0 && dc !== 0)                  { nc = dc > 0 ? 1 : -1; }
+  else if (dc === 0 && dr !== 0)                  { nr = dr > 0 ? 1 : -1; }
+  else if (Math.abs(dr) === Math.abs(dc))         { nr = dr > 0 ? 1 : -1; nc = dc > 0 ? 1 : -1; }
+  else { selectedCells = [selectStart]; updateSelUI(); return; }
+
+  const cells = [];
+  let cr = selectStart.r, cc = selectStart.c;
+  while (true) {
+    cells.push({ r: cr, c: cc });
+    if (cr === r && cc === c) break;
+    cr += nr; cc += nc;
+    if (cr < 0 || cr >= rows || cc < 0 || cc >= cols) break;
+  }
+  selectedCells = cells;
+  updateSelUI();
+}
+
+function endSel() {
+  if (!isDragging) return;
+  isDragging = false;
+  checkSel();
+  selectedCells = [];
+  updateSelUI();
+  selectStart = null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SELECTION UI
+// ═══════════════════════════════════════════════════════════
+function updateSelUI() {
+  document.querySelectorAll('.cell.selected').forEach(el => {
+    // Don't remove found class
+    el.classList.remove('selected');
+  });
+  const source = clickMode ? clickChain : selectedCells;
+  source.forEach(({ r, c }) => {
+    const el = getCellEl(r, c);
+    if (el && !el.className.includes('found-')) el.classList.add('selected');
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHECK SELECTION
+// ═══════════════════════════════════════════════════════════
+function checkSel() {
+  const source = clickMode ? clickChain : selectedCells;
+  if (source.length < 2) return;
+
+  const keys = new Set(source.map(({ r, c }) => `${r},${c}`));
+  const selStr = source.map(({ r, c }) => grid[r][c]).join('');
+  const selStrRev = [...selStr].reverse().join('');
+
+  // Check against each unfound MK
+  for (const mk of currentMKs) {
+    if (mk.found) continue;
+    const target = mk.gridWord;
+    if ((selStr === target || selStrRev === target) && keys.size === target.length) {
+      // Verify all cells match mkCells
+      const expected = mkCells[target];
+      if (!expected) continue;
+      const overlap = [...keys].filter(k => expected.has(k)).length;
+      if (overlap === expected.size && keys.size === expected.size) {
+        markFound(mk, keys);
+        return;
+      }
+    }
+  }
+
+  // Wrong — shake
+  document.getElementById('grid').classList.add('shake');
+  setTimeout(() => document.getElementById('grid').classList.remove('shake'), 450);
+}
+
+function markFound(mk, keys) {
+  mk.found = true;
+  foundCount++;
+
+  // Mark cells
+  keys.forEach(key => {
+    const [r, c] = key.split(',').map(Number);
+    const el = getCellEl(r, c);
+    if (el) {
+      el.classList.remove('selected');
+      // Remove any previous found class
+      el.className = el.className.replace(/found-\d+/g, '').trim();
+      el.classList.add(`found-${mk.colorIdx}`, 'just-found');
+      setTimeout(() => el.classList.remove('just-found'), 500);
+    }
+  });
+
+  // Mark chip
+  const chip = document.getElementById(`chip-${currentMKs.indexOf(mk)}`);
+  if (chip) chip.classList.add('found');
+
+  // Clear selection
+  clearClickChain();
+  selectedCells = [];
+
+  updateStatus();
+
+  // Check win
+  if (foundCount === currentMKs.length) {
+    setTimeout(onWin, 600);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// WIN
+// ═══════════════════════════════════════════════════════════
+function onWin() {
+  gameActive = false;
+  stopTimer();
+
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+  const timeStr = `${m}:${String(s).padStart(2, '0')}`;
+
+  document.getElementById('win-time').textContent  = timeStr;
+  document.getElementById('win-found').textContent = foundCount;
+
+  const title = currentGame.shortName || currentGame.title;
+  document.getElementById('win-sub').textContent =
+    `מצאת את כל ${foundCount} חברי הכנסת שהצביעו בהצבעה "${title}"`;
+
+  // Build MK list in win sheet
+  const list = document.getElementById('win-mk-list');
+  list.innerHTML = '';
+  currentMKs.forEach(mk => {
+    const c   = MK_COLORS[mk.colorIdx];
+    const row = document.createElement('div');
+    row.className = 'win-mk-row';
+    row.innerHTML = `
+      <div class="win-mk-dot" style="background:${c.text}"></div>
+      <div class="win-mk-name">${mk.name}</div>
+      <div class="win-mk-faction">${mk.faction || ''}</div>`;
+    list.appendChild(row);
+  });
+
+  document.getElementById('win-overlay').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════════════════════════
+function restartGame() {
+  document.getElementById('win-overlay').classList.remove('show');
+  const next = pickGame();
+  if (next) startGame(next);
+}
+
+function confirmRestart() {
+  if (!gameActive && !timerSeconds) return;
+  if (gameActive && !confirm('לעבור להצבעה אחרת?')) return;
+  stopTimer();
+  gameActive = false;
+  clearClickChain();
+  const next = pickGame();
+  if (next) startGame(next);
+}
+
+function showInfo() {
+  document.getElementById('info-overlay').classList.add('show');
+}
+
+function dismissWelcome() {
+  const overlay = document.getElementById('welcome-overlay');
+  overlay.classList.add('hidden');
+  setTimeout(() => overlay.remove(), 450);
+  const game = pickGame();
+  if (game) startGame(game);
+}
+
+// ═══════════════════════════════════════════════════════════
+// GLOBAL MOUSE/TOUCH UP
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('mouseup', () => {
+  if (isDragging) endSel();
+  _pendingDrag = null;
+});
+
+// ═══════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
