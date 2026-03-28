@@ -8,438 +8,211 @@
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800;900&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --knesset:  #1a3a5c;
-    --gold:     #d4a843;
-    --accent:   #e63946;
-    --green:    #2dc653;
-    --sky:      #e8f4fd;
-    --white:    #ffffff;
-    --text:     #1e293b;
-    --muted:    #64748b;
-    --shadow:   0 4px 24px rgba(0,0,0,0.10);
-    --r-sm:     10px;
-    --cell-size: 34px;
-    --grid-font: 0.82rem;
+    --knesset:#1a3a5c; --gold:#d4a843; --accent:#e63946; --green:#2dc653;
+    --sky:#e8f4fd; --white:#ffffff; --text:#1e293b; --muted:#64748b;
+    --shadow:0 4px 24px rgba(0,0,0,0.10); --r-sm:10px;
+    --cell-size:36px; --grid-font:1rem;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;font-family:'Rubik',sans-serif;
+    background:linear-gradient(180deg,#a8d8f0 0%,#c9e8f8 30%,var(--sky) 60%);
+    color:var(--text);overflow:hidden;user-select:none;-webkit-tap-highlight-color:transparent;}
 
-    /* צבעים לח"כים שנמצאו */
-    --mk-color-0: #2dc653;
-    --mk-color-1: #2563eb;
-    --mk-color-2: #e63946;
-    --mk-color-3: #f59e0b;
-    --mk-color-4: #8b5cf6;
-    --mk-color-5: #06b6d4;
-    --mk-color-6: #ec4899;
-    --mk-color-7: #10b981;
-    --mk-color-8: #f97316;
-    --mk-color-9: #6366f1;
-  }
+  .game-wrapper{width:100%;max-width:700px;margin:0 auto;display:flex;
+    flex-direction:column;align-items:center;gap:7px;padding:8px 10px 0;height:100dvh;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* HEADER */
+  .header{display:flex;align-items:center;justify-content:space-between;width:100%;}
+  .title{font-size:clamp(1.15rem,3.5vw,1.6rem);font-weight:900;color:var(--knesset);line-height:1;}
+  .icon-btn{background:transparent;border:none;font-size:1.3rem;cursor:pointer;
+    padding:4px 6px;border-radius:8px;transition:transform 0.15s;line-height:1;}
+  .icon-btn:hover{transform:scale(1.2);}
+  .icon-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
 
-  html, body {
-    height: 100%;
-    font-family: 'Rubik', sans-serif;
-    background: linear-gradient(180deg, #a8d8f0 0%, #c9e8f8 30%, var(--sky) 60%);
-    color: var(--text);
-    overflow: hidden;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
+  /* VOTE BANNER */
+  .vote-banner{width:100%;background:var(--white);border:2px solid rgba(26,58,92,0.12);
+    border-right:4px solid var(--knesset);border-radius:var(--r-sm);
+    padding:8px 12px 8px 36px;box-shadow:var(--shadow);position:relative;}
+  .vote-banner::before{content:'🗳️';position:absolute;left:10px;top:50%;
+    transform:translateY(-50%);font-size:1rem;}
+  .vote-label{font-family:'Assistant',sans-serif;font-size:0.52rem;color:var(--knesset);
+    text-transform:uppercase;letter-spacing:2px;margin-bottom:2px;font-weight:700;opacity:0.6;}
+  .vote-title{font-size:clamp(0.78rem,2.2vw,0.95rem);font-weight:700;
+    color:var(--knesset);line-height:1.35;transition:opacity 0.25s;}
+  .vote-meta{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;}
+  .vote-pill{font-family:'Assistant',sans-serif;font-size:0.62rem;font-weight:700;
+    padding:2px 9px;border-radius:20px;background:#f1f5f9;color:var(--muted);}
+  .vote-pill.for    {background:rgba(45,198,83,0.12);color:#15803d;}
+  .vote-pill.against{background:rgba(230,57,70,0.10);color:#b91c1c;}
+  .vote-pill.abstain{background:rgba(245,158,11,0.10);color:#92400e;}
 
-  .game-wrapper {
-    width: 100%;
-    max-width: 700px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 10px 0;
-    height: 100dvh;
-  }
+  /* STATUS BAR */
+  .status-bar{display:flex;align-items:center;justify-content:space-between;
+    width:100%;background:var(--white);border-radius:var(--r-sm);
+    padding:6px 14px;box-shadow:var(--shadow);gap:8px;}
+  .stat-block{display:flex;flex-direction:column;align-items:center;}
+  .stat-label{font-family:'Assistant',sans-serif;font-size:0.5rem;color:var(--muted);
+    text-transform:uppercase;letter-spacing:2px;font-weight:700;}
+  .stat-val{font-size:1.2rem;font-weight:900;color:var(--knesset);line-height:1;
+    font-variant-numeric:tabular-nums;}
+  .lives-block{display:flex;gap:4px;font-size:1.3rem;}
+  .life{transition:transform 0.3s,opacity 0.3s;}
+  .life.lost{opacity:0.15;transform:scale(0.75);}
 
-  /* ── HEADER ── */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-  }
-  .title {
-    font-size: clamp(1.2rem, 3.5vw, 1.7rem);
-    font-weight: 900;
-    color: var(--knesset);
-    line-height: 1;
-  }
-  .icon-btn {
-    background: transparent;
-    border: none;
-    font-size: 1.3rem;
-    cursor: pointer;
-    padding: 4px 6px;
-    border-radius: 8px;
-    transition: transform 0.15s;
-    line-height: 1;
-  }
-  .icon-btn:hover { transform: scale(1.2); }
+  /* TIMER */
+  .timer-wrap{width:100%;}
+  .timer-row{display:flex;align-items:center;gap:10px;}
+  .timer-num{font-size:1.6rem;font-weight:900;color:var(--knesset);
+    font-variant-numeric:tabular-nums;min-width:44px;transition:color 0.3s;}
+  .timer-num.urgent{color:var(--accent);animation:pulse-urgent 0.6s ease infinite;}
+  @keyframes pulse-urgent{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+  .progress-wrap{flex:1;background:rgba(0,0,0,0.08);border-radius:20px;height:11px;overflow:hidden;}
+  .progress-bar{height:100%;width:100%;border-radius:20px;
+    background:linear-gradient(90deg,var(--gold),#f7d060);
+    transition:width 0.9s linear,background 0.5s;
+    box-shadow:0 0 8px rgba(212,168,67,0.4);}
+  .progress-bar.urgent{background:linear-gradient(90deg,var(--accent),#ff6b6b);
+    box-shadow:0 0 8px rgba(230,57,70,0.4);}
 
-  /* ── VOTE BANNER ── */
-  .vote-banner {
-    width: 100%;
-    background: var(--white);
-    border: 2px solid rgba(26,58,92,0.12);
-    border-right: 4px solid var(--knesset);
-    border-radius: var(--r-sm);
-    padding: 8px 12px 8px 12px;
-    box-shadow: var(--shadow);
-  }
-  .vote-label {
-    font-family: 'Assistant', sans-serif;
-    font-size: 0.52rem;
-    color: var(--knesset);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 2px;
-    font-weight: 700;
-    opacity: 0.6;
-  }
-  .vote-title {
-    font-size: clamp(0.78rem, 2.2vw, 0.95rem);
-    font-weight: 700;
-    color: var(--knesset);
-    line-height: 1.35;
-  }
-  .vote-meta {
-    display: flex;
-    gap: 8px;
-    margin-top: 4px;
-    flex-wrap: wrap;
-  }
-  .vote-pill {
-    font-family: 'Assistant', sans-serif;
-    font-size: 0.62rem;
-    font-weight: 700;
-    padding: 2px 9px;
-    border-radius: 20px;
-    background: #f1f5f9;
-    color: var(--muted);
-  }
-  .vote-pill.for     { background: rgba(45,198,83,0.12);  color: #15803d; }
-  .vote-pill.against { background: rgba(230,57,70,0.10);  color: #b91c1c; }
-  .vote-pill.abstain { background: rgba(245,158,11,0.10); color: #92400e; }
+  /* GRID */
+  .grid-container{direction:ltr;display:flex;justify-content:center;
+    align-items:center;width:100%;flex:1;min-height:0;}
+  .grid{display:inline-grid;gap:2px;user-select:none;touch-action:none;}
+  .cell{width:var(--cell-size);height:var(--cell-size);display:flex;align-items:center;
+    justify-content:center;font-size:var(--grid-font);font-weight:700;color:var(--text);
+    background:var(--white);border:1.5px solid #dde4ef;border-radius:5px;cursor:pointer;
+    transition:background 0.1s,color 0.1s,transform 0.1s,border-color 0.1s;
+    box-shadow:0 1px 3px rgba(26,58,92,0.07);}
+  .cell:hover{background:var(--sky);border-color:var(--knesset);color:var(--knesset);}
+  .cell.selected{background:rgba(212,168,67,0.2);border-color:var(--gold);color:#92620a;
+    transform:scale(1.07);z-index:2;box-shadow:0 0 0 2px rgba(212,168,67,0.3);}
+  .cell.found{background:rgba(45,198,83,0.12);border-color:rgba(45,198,83,0.4);
+    color:#15803d;font-weight:800;animation:pulse-found 0.5s ease;}
+  @keyframes pulse-found{0%{transform:scale(1)}50%{transform:scale(1.13);background:rgba(45,198,83,0.3)}100%{transform:scale(1)}}
+  .cell.hint{background:rgba(212,168,67,0.25);border-color:var(--gold);border-width:2.5px;
+    color:#92620a;font-weight:900;animation:pulse-hint 1.2s ease-in-out infinite;}
+  @keyframes pulse-hint{0%,100%{box-shadow:0 0 0 0 rgba(212,168,67,0);background:rgba(212,168,67,0.25)}
+    50%{box-shadow:0 0 10px 4px rgba(212,168,67,0.55);background:rgba(212,168,67,0.45)}}
+  .cell.revealed{background:rgba(230,57,70,0.15);border-color:var(--accent);
+    color:var(--accent);font-weight:900;animation:pulse-reveal 0.6s ease;}
+  @keyframes pulse-reveal{0%{transform:scale(1)}50%{transform:scale(1.15);background:rgba(230,57,70,0.35)}100%{transform:scale(1)}}
+  .grid.shake{animation:shake 0.45s ease;}
+  @keyframes shake{0%{transform:translateX(0)}20%{transform:translateX(-9px)}
+    40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}100%{transform:translateX(0)}}
 
-  /* ── STATUS BAR ── */
-  .status-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    background: var(--white);
-    border-radius: var(--r-sm);
-    padding: 6px 12px;
-    box-shadow: var(--shadow);
-    gap: 8px;
-  }
-  .stat-block { display: flex; flex-direction: column; align-items: center; }
-  .stat-label {
-    font-family: 'Assistant', sans-serif;
-    font-size: 0.5rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: 700;
-  }
-  .stat-val {
-    font-size: 1.15rem;
-    font-weight: 900;
-    color: var(--knesset);
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-  .stat-val.timer-urgent { color: var(--accent); animation: pulse-timer 0.6s ease infinite; }
-  @keyframes pulse-timer { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+  /* SCREEN FLASH */
+  .screen-flash{position:fixed;inset:0;z-index:50;pointer-events:none;opacity:0;transition:opacity 0.15s;}
+  .screen-flash.red{background:rgba(230,57,70,0.2);}
 
-  /* ── MK CHIPS ── */
-  .mk-list {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    justify-content: center;
-  }
-  .mk-chip {
-    font-family: 'Assistant', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 20px;
-    border: 2px solid;
-    transition: all 0.3s;
-    white-space: nowrap;
-    opacity: 0.45;
-  }
-  .mk-chip.found {
-    opacity: 1;
-    animation: chip-pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  @keyframes chip-pop {
-    0%  { transform: scale(0.85); }
-    60% { transform: scale(1.15); }
-    100%{ transform: scale(1); }
-  }
+  /* OVERLAYS */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(15,30,60,0.75);
+    backdrop-filter:blur(12px);z-index:100;align-items:flex-end;justify-content:center;}
+  .overlay.show{display:flex;animation:fade-in 0.3s ease;}
+  @keyframes fade-in{from{opacity:0}to{opacity:1}}
+  .sheet{background:var(--white);border-radius:28px 28px 0 0;
+    padding:20px 22px calc(32px + env(safe-area-inset-bottom,0px));
+    width:100%;max-width:480px;text-align:center;
+    animation:slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    display:flex;flex-direction:column;align-items:center;gap:12px;
+    max-height:90dvh;overflow-y:auto;}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .sheet-handle{width:40px;height:4px;background:#e2e8f0;border-radius:4px;}
+  .sheet-emoji{font-size:2.8rem;}
+  .sheet-title{font-size:1.6rem;font-weight:900;color:var(--knesset);line-height:1.1;}
+  .sheet-sub{font-family:'Assistant',sans-serif;font-size:0.92rem;color:var(--muted);font-weight:600;line-height:1.5;}
+  .stats-row{display:flex;gap:10px;width:100%;}
+  .stat-box{flex:1;background:#f8fafc;border-radius:12px;padding:10px 6px;
+    display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .stat-box .val{font-size:1.5rem;font-weight:900;color:var(--knesset);line-height:1;}
+  .stat-box .lbl{font-family:'Assistant',sans-serif;font-size:0.6rem;color:var(--muted);
+    font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+  .btn-primary{width:100%;background:var(--knesset);color:var(--white);border:none;
+    border-radius:14px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;
+    font-family:'Rubik',sans-serif;box-shadow:0 6px 0 #0d2240,var(--shadow);
+    transition:all 0.1s;position:relative;top:0;}
+  .btn-primary:active{top:6px;box-shadow:0 0 0 transparent;}
+  .btn-secondary{width:100%;background:transparent;border:2px solid #e2e8f0;
+    border-radius:14px;color:var(--muted);font-size:0.9rem;font-weight:700;padding:11px;
+    cursor:pointer;font-family:'Rubik',sans-serif;transition:all 0.2s;}
+  .btn-secondary:hover{border-color:var(--knesset);color:var(--knesset);}
 
-  /* ── GRID ── */
-  .grid-container {
-    direction: ltr;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    flex: 1;
-    min-height: 0;
-  }
-  .grid {
-    display: inline-grid;
-    gap: 2px;
-    user-select: none;
-    touch-action: none;
-  }
-  .cell {
-    width: var(--cell-size);
-    height: var(--cell-size);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--grid-font);
-    font-weight: 700;
-    color: var(--text);
-    background: var(--white);
-    border: 1.5px solid #dde4ef;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.1s, color 0.1s, transform 0.1s, border-color 0.1s;
-    box-shadow: 0 1px 3px rgba(26,58,92,0.07);
-    position: relative;
-  }
-  .cell:hover { background: var(--sky); border-color: var(--knesset); }
-  .cell.selected {
-    background: rgba(212,168,67,0.2);
-    border-color: var(--gold);
-    color: #92620a;
-    transform: scale(1.07);
-    z-index: 2;
-    box-shadow: 0 0 0 2px rgba(212,168,67,0.3);
-  }
+  /* SPLASH */
+  .splash-overlay{position:fixed;inset:0;z-index:90;background:rgba(15,30,60,0.82);
+    backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;padding:24px;}
+  .splash-overlay.hidden{display:none;}
+  .splash-card{background:var(--white);border-radius:24px;padding:28px 24px 24px;
+    max-width:420px;width:100%;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:14px;
+    animation:popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);}
+  @keyframes popIn{from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:scale(1)}}
+  .splash-badge{background:var(--knesset);color:var(--white);font-size:0.68rem;
+    font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:5px 16px;border-radius:20px;}
+  .splash-question{font-size:clamp(0.95rem,3.5vw,1.25rem);font-weight:900;color:var(--knesset);
+    line-height:1.4;border-right:5px solid var(--accent);padding-right:14px;
+    text-align:right;width:100%;}
+  .splash-instruction{font-family:'Assistant',sans-serif;font-size:0.82rem;color:var(--muted);
+    background:#f8fafc;border-radius:8px;padding:8px 14px;width:100%;}
 
-  /* צבעים דינמיים לח"כים שנמצאו */
-  .cell.found-0 { background: rgba(45,198,83,0.15);  border-color: rgba(45,198,83,0.5);  color: #15803d; font-weight: 800; }
-  .cell.found-1 { background: rgba(37,99,235,0.12);  border-color: rgba(37,99,235,0.5);  color: #1d4ed8; font-weight: 800; }
-  .cell.found-2 { background: rgba(230,57,70,0.12);  border-color: rgba(230,57,70,0.5);  color: #b91c1c; font-weight: 800; }
-  .cell.found-3 { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.5); color: #92400e; font-weight: 800; }
-  .cell.found-4 { background: rgba(139,92,246,0.12); border-color: rgba(139,92,246,0.5); color: #6d28d9; font-weight: 800; }
-  .cell.found-5 { background: rgba(6,182,212,0.12);  border-color: rgba(6,182,212,0.5);  color: #0e7490; font-weight: 800; }
-  .cell.found-6 { background: rgba(236,72,153,0.12); border-color: rgba(236,72,153,0.5); color: #9d174d; font-weight: 800; }
-  .cell.found-7 { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.5); color: #065f46; font-weight: 800; }
-  .cell.found-8 { background: rgba(249,115,22,0.12); border-color: rgba(249,115,22,0.5); color: #c2410c; font-weight: 800; }
-  .cell.found-9 { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.5); color: #4338ca; font-weight: 800; }
+  /* WELCOME */
+  .welcome-overlay{position:fixed;inset:0;z-index:200;
+    background:linear-gradient(160deg,#0d2240 0%,#1a3a5c 60%,#1e4976 100%);
+    display:flex;align-items:center;justify-content:center;padding:24px;transition:opacity 0.4s ease;}
+  .welcome-overlay.hidden{opacity:0;pointer-events:none;}
+  .welcome-card{background:var(--white);border-radius:28px;padding:30px 26px 26px;
+    max-width:400px;width:100%;text-align:center;display:flex;flex-direction:column;
+    align-items:center;gap:14px;animation:popIn 0.45s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow:0 24px 60px rgba(0,0,0,0.35);}
+  .welcome-logo{font-size:3rem;line-height:1;}
+  .welcome-title{font-size:clamp(1.7rem,5.5vw,2.3rem);font-weight:900;color:var(--knesset);line-height:1;}
+  .welcome-tagline{font-family:'Assistant',sans-serif;font-size:0.88rem;color:var(--muted);
+    font-weight:600;line-height:1.5;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;
+    padding:10px 4px;width:100%;}
+  .welcome-steps{width:100%;display:flex;flex-direction:column;gap:7px;text-align:right;}
+  .welcome-step{display:flex;gap:10px;align-items:center;background:#f8fafc;border-radius:10px;padding:8px 12px;}
+  .welcome-step-icon{font-size:1.1rem;flex-shrink:0;}
+  .welcome-step-text{font-family:'Assistant',sans-serif;font-size:0.82rem;color:var(--muted);font-weight:600;line-height:1.4;}
+  .welcome-step-text strong{color:var(--text);font-family:'Rubik',sans-serif;font-weight:800;}
+  .welcome-btn{width:100%;background:var(--accent);color:var(--white);border:none;
+    border-radius:16px;padding:15px;font-size:1.05rem;font-weight:900;cursor:pointer;
+    font-family:'Rubik',sans-serif;box-shadow:0 6px 0 #9b1c26,0 8px 24px rgba(230,57,70,0.35);
+    transition:all 0.1s;position:relative;top:0;}
+  .welcome-btn:active{top:6px;box-shadow:0 0 0 transparent;}
 
-  @keyframes pulse-found {
-    0%  { transform: scale(1); }
-    50% { transform: scale(1.13); }
-    100%{ transform: scale(1); }
-  }
-  .cell.just-found { animation: pulse-found 0.5s ease; }
+  /* LOADING */
+  .loading-screen{position:fixed;inset:0;z-index:300;
+    background:linear-gradient(160deg,#0d2240 0%,#1a3a5c 60%);
+    display:flex;align-items:center;justify-content:center;
+    flex-direction:column;gap:20px;transition:opacity 0.4s ease;}
+  .loading-screen.hidden{opacity:0;pointer-events:none;}
+  .load-bars{display:flex;align-items:flex-end;gap:5px;height:44px;}
+  .load-bars span{border-radius:4px 4px 0 0;width:12px;animation:barPulse 1.2s ease-in-out infinite;}
+  .load-bars span:nth-child(1){height:44px;background:var(--knesset);animation-delay:0s;}
+  .load-bars span:nth-child(2){height:34px;background:var(--gold);animation-delay:0.15s;}
+  .load-bars span:nth-child(3){height:24px;background:var(--accent);animation-delay:0.3s;}
+  @keyframes barPulse{0%,100%{opacity:1;transform:scaleY(1)}50%{opacity:0.5;transform:scaleY(0.75)}}
+  .load-title{color:#fff;font-size:1.6rem;font-weight:900;letter-spacing:-0.5px;}
+  .load-msg{color:rgba(255,255,255,0.6);font-family:'Assistant',sans-serif;font-size:0.9rem;}
+  .load-spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,0.15);
+    border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .load-error{color:#fca5a5;font-family:'Assistant',sans-serif;font-size:0.9rem;
+    background:rgba(230,57,70,0.15);border:1px solid rgba(230,57,70,0.3);
+    border-radius:10px;padding:12px 16px;max-width:320px;text-align:center;line-height:1.6;}
+  .load-retry{background:var(--accent);color:#fff;border:none;border-radius:12px;
+    padding:10px 24px;font-family:'Rubik',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;}
 
-  .grid.shake { animation: shake 0.45s ease; }
-  @keyframes shake {
-    0%   { transform: translateX(0); }
-    20%  { transform: translateX(-9px); }
-    40%  { transform: translateX(9px); }
-    60%  { transform: translateX(-6px); }
-    80%  { transform: translateX(6px); }
-    100% { transform: translateX(0); }
-  }
-
-  /* ── OVERLAYS ── */
-  .overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(15,30,60,0.75);
-    backdrop-filter: blur(12px);
-    z-index: 100;
-    align-items: flex-end;
-    justify-content: center;
-  }
-  .overlay.show { display: flex; animation: fade-in 0.3s ease; }
-  @keyframes fade-in { from{opacity:0} to{opacity:1} }
-
-  .sheet {
-    background: var(--white);
-    border-radius: 28px 28px 0 0;
-    padding: 20px 22px calc(32px + env(safe-area-inset-bottom,0px));
-    width: 100%;
-    max-width: 480px;
-    text-align: center;
-    animation: slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    max-height: 90dvh;
-    overflow-y: auto;
-  }
-  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-  .sheet-handle { width: 40px; height: 4px; background: #e2e8f0; border-radius: 4px; }
-  .sheet-emoji  { font-size: 2.8rem; }
-  .sheet-title  { font-size: 1.6rem; font-weight: 900; color: var(--knesset); line-height: 1.1; }
-  .sheet-sub    { font-family: 'Assistant', sans-serif; font-size: 0.95rem; color: var(--muted); font-weight: 600; line-height: 1.5; }
-
-  .stats-row { display: flex; gap: 10px; width: 100%; }
-  .stat-box {
-    flex: 1; background: #f8fafc; border-radius: 12px; padding: 10px 6px;
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-  }
-  .stat-box .val { font-size: 1.6rem; font-weight: 900; color: var(--knesset); line-height: 1; }
-  .stat-box .lbl { font-family: 'Assistant', sans-serif; font-size: 0.6rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-
-  .btn-primary {
-    width: 100%; background: var(--knesset); color: var(--white);
-    border: none; border-radius: 14px; padding: 14px;
-    font-size: 1rem; font-weight: 800; cursor: pointer;
-    font-family: 'Rubik', sans-serif;
-    box-shadow: 0 6px 0 #0d2240, var(--shadow);
-    transition: all 0.1s; position: relative; top: 0;
-  }
-  .btn-primary:active { top: 6px; box-shadow: 0 0 0 transparent; }
-  .btn-secondary {
-    width: 100%; background: transparent; border: 2px solid #e2e8f0;
-    border-radius: 14px; color: var(--muted); font-size: 0.9rem;
-    font-weight: 700; padding: 11px; cursor: pointer;
-    font-family: 'Rubik', sans-serif; transition: all 0.2s;
-  }
-  .btn-secondary:hover { border-color: var(--knesset); color: var(--knesset); }
-
-  /* ── WIN MK LIST ── */
-  .win-mk-list {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    text-align: right;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  .win-mk-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #f8fafc;
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-family: 'Assistant', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 700;
-  }
-  .win-mk-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .win-mk-name { flex: 1; color: var(--text); }
-  .win-mk-faction { color: var(--muted); font-weight: 500; font-size: 0.75rem; }
-
-  /* ── WELCOME ── */
-  .welcome-overlay {
-    position: fixed; inset: 0; z-index: 200;
-    background: linear-gradient(160deg, #0d2240 0%, #1a3a5c 60%, #1e4976 100%);
-    display: flex; align-items: center; justify-content: center; padding: 24px;
-    transition: opacity 0.4s ease;
-  }
-  .welcome-overlay.hidden { opacity: 0; pointer-events: none; }
-  .welcome-card {
-    background: var(--white); border-radius: 28px;
-    padding: 32px 28px 28px; max-width: 400px; width: 100%;
-    text-align: center; display: flex; flex-direction: column;
-    align-items: center; gap: 16px;
-    animation: popIn 0.45s cubic-bezier(0.34,1.56,0.64,1);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.35);
-  }
-  @keyframes popIn { from{opacity:0;transform:scale(0.88)} to{opacity:1;transform:scale(1)} }
-  .welcome-logo { font-size: 3rem; line-height: 1; }
-  .welcome-title { font-size: clamp(1.8rem, 6vw, 2.4rem); font-weight: 900; color: var(--knesset); line-height: 1; }
-  .welcome-tagline {
-    font-family: 'Assistant', sans-serif; font-size: 0.9rem; color: var(--muted);
-    font-weight: 600; line-height: 1.5; border-top: 1px solid #e2e8f0;
-    border-bottom: 1px solid #e2e8f0; padding: 10px 4px; width: 100%;
-  }
-  .welcome-steps { width: 100%; display: flex; flex-direction: column; gap: 7px; text-align: right; }
-  .welcome-step {
-    display: flex; gap: 10px; align-items: center;
-    background: #f8fafc; border-radius: 10px; padding: 8px 12px;
-  }
-  .welcome-step-icon { font-size: 1.1rem; flex-shrink: 0; }
-  .welcome-step-text { font-family: 'Assistant', sans-serif; font-size: 0.82rem; color: var(--muted); font-weight: 600; line-height: 1.4; }
-  .welcome-step-text strong { color: var(--text); font-family: 'Rubik', sans-serif; font-weight: 800; }
-  .welcome-btn {
-    width: 100%; background: var(--accent); color: var(--white);
-    border: none; border-radius: 16px; padding: 15px;
-    font-size: 1.05rem; font-weight: 900; cursor: pointer;
-    font-family: 'Rubik', sans-serif;
-    box-shadow: 0 6px 0 #9b1c26, 0 8px 24px rgba(230,57,70,0.35);
-    transition: all 0.1s; position: relative; top: 0;
-  }
-  .welcome-btn:active { top: 6px; box-shadow: 0 0 0 transparent; }
-
-  /* ── LOADING SCREEN ── */
-  .loading-screen {
-    position: fixed; inset: 0; z-index: 300;
-    background: linear-gradient(160deg, #0d2240 0%, #1a3a5c 60%);
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 20px;
-    transition: opacity 0.4s ease;
-  }
-  .loading-screen.hidden { opacity: 0; pointer-events: none; }
-  .load-bars { display: flex; align-items: flex-end; gap: 5px; height: 44px; }
-  .load-bars span {
-    border-radius: 4px 4px 0 0; width: 12px;
-    animation: barPulse 1.2s ease-in-out infinite;
-  }
-  .load-bars span:nth-child(1) { height: 44px; background: var(--knesset); animation-delay: 0s; }
-  .load-bars span:nth-child(2) { height: 34px; background: var(--gold);    animation-delay: 0.15s; }
-  .load-bars span:nth-child(3) { height: 24px; background: var(--accent);  animation-delay: 0.3s; }
-  @keyframes barPulse { 0%,100%{opacity:1;transform:scaleY(1)} 50%{opacity:0.5;transform:scaleY(0.75)} }
-  .load-title { color: #fff; font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px; }
-  .load-msg   { color: rgba(255,255,255,0.6); font-family: 'Assistant', sans-serif; font-size: 0.9rem; }
-  .load-spinner {
-    width: 36px; height: 36px;
-    border: 3px solid rgba(255,255,255,0.15);
-    border-top-color: var(--gold);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .load-error {
-    color: #fca5a5; font-family: 'Assistant', sans-serif; font-size: 0.9rem;
-    background: rgba(230,57,70,0.15); border: 1px solid rgba(230,57,70,0.3);
-    border-radius: 10px; padding: 12px 16px; max-width: 320px; text-align: center;
-    line-height: 1.6;
-  }
-  .load-retry {
-    background: var(--accent); color: #fff; border: none;
-    border-radius: 12px; padding: 10px 24px;
-    font-family: 'Rubik', sans-serif; font-weight: 800; font-size: 0.9rem;
-    cursor: pointer;
-  }
-
-  @media (max-height: 700px) {
-    .game-wrapper { gap: 4px; padding-top: 5px; }
-    .vote-banner  { padding: 5px 10px; }
-    .status-bar   { padding: 4px 10px; }
-    .mk-list      { gap: 3px; }
-    .mk-chip      { font-size: 0.65rem; padding: 2px 7px; }
+  @media(max-height:700px){
+    .game-wrapper{gap:4px;padding-top:5px;}
+    .vote-banner{padding:5px 10px 5px 34px;}
+    .status-bar{padding:4px 12px;}
   }
 </style>
 </head>
 <body>
 
-<!-- ═══ LOADING SCREEN ═══ -->
+<div class="screen-flash" id="screen-flash"></div>
+
+<!-- LOADING -->
 <div class="loading-screen" id="loading-screen">
   <div class="load-bars"><span></span><span></span><span></span></div>
   <div class="load-title">מצא את המצביעים</div>
@@ -449,834 +222,612 @@
   <button class="load-retry" id="load-retry" style="display:none" onclick="init()">🔄 נסה שוב</button>
 </div>
 
-<!-- ═══ WELCOME SCREEN ═══ -->
+<!-- WELCOME -->
 <div class="welcome-overlay hidden" id="welcome-overlay">
   <div class="welcome-card">
     <div class="welcome-logo">🔍</div>
     <div class="welcome-title">מצא את המצביעים</div>
-    <div class="welcome-tagline">
-      מצא בגריד את שמות חברי הכנסת<br>שהצביעו על חוקים בכנסת
-    </div>
+    <div class="welcome-tagline">מצא בגריד שמות ח"כים שהצביעו<br>על חוקים אמיתיים בכנסת</div>
     <div class="welcome-steps">
-      <div class="welcome-step">
-        <span class="welcome-step-icon">🗳️</span>
-        <div class="welcome-step-text">קרא את <strong>נושא ההצבעה</strong> ומי אמור להסתתר בגריד</div>
-      </div>
-      <div class="welcome-step">
-        <span class="welcome-step-icon">👆</span>
-        <div class="welcome-step-text">גרור או לחץ אות-אות — <strong>אופקי, אנכי ואלכסוני</strong> בכל כיוון</div>
-      </div>
-      <div class="welcome-step">
-        <span class="welcome-step-icon">🎨</span>
-        <div class="welcome-step-text">כל ח"כ שנמצא מקבל <strong>צבע משלו</strong> — מצא את כולם!</div>
-      </div>
-      <div class="welcome-step">
-        <span class="welcome-step-icon">⏱️</span>
-        <div class="welcome-step-text">הטיימר סופר כמה זמן לקח — <strong>כמה מהר תמצא את כולם?</strong></div>
-      </div>
+      <div class="welcome-step"><span class="welcome-step-icon">🗳️</span>
+        <div class="welcome-step-text">קרא את <strong>נושא ההצבעה</strong> — ומצא ח"כ שהצביע בה</div></div>
+      <div class="welcome-step"><span class="welcome-step-icon">👆</span>
+        <div class="welcome-step-text">גרור או לחץ אות-אות — <strong>אופקי, אנכי ואלכסוני</strong> בכל כיוון</div></div>
+      <div class="welcome-step"><span class="welcome-step-icon">⏱️</span>
+        <div class="welcome-step-text"><strong>זמן מוגבל</strong> — מהר = יותר נקודות. כל סיבוב קצר יותר!</div></div>
+      <div class="welcome-step"><span class="welcome-step-icon">❤️</span>
+        <div class="welcome-step-text"><strong>3 חיים</strong> — נגמר הזמן = חיים אחד פחות</div></div>
     </div>
     <button class="welcome-btn" onclick="dismissWelcome()">▶&nbsp;&nbsp;התחל לשחק!</button>
   </div>
 </div>
 
-<!-- ═══ GAME UI ═══ -->
+<!-- GAME UI -->
 <div class="game-wrapper">
 
   <div class="header">
     <div style="display:flex;gap:4px;">
-      <button class="icon-btn" onclick="confirmRestart()" title="הצבעה אחרת">↺</button>
+      <button class="icon-btn" id="giveup-btn" onclick="giveUp()" title="ויתור" disabled>🏳️</button>
+      <button class="icon-btn" onclick="confirmRestart()" title="התחל מחדש">↺</button>
     </div>
     <div class="title">🔍 מצא את המצביעים</div>
     <div style="display:flex;gap:4px;">
-      <button class="icon-btn" onclick="showInfo()" title="הוראות" style="font-style:italic;font-weight:900;font-family:'Rubik',sans-serif;font-size:1rem;">i</button>
+      <button class="icon-btn" onclick="showInfo()" style="font-style:italic;font-weight:900;font-family:'Rubik',sans-serif;font-size:1rem;">i</button>
+      <button class="icon-btn" id="hint-btn" onclick="useHint()" title="רמז">💡</button>
     </div>
   </div>
 
-  <div class="vote-banner" id="vote-banner">
-    <div class="vote-label">נושא ההצבעה</div>
+  <div class="vote-banner">
+    <div class="vote-label">מצא ח"כ שהצביע</div>
     <div class="vote-title" id="vote-title">...</div>
     <div class="vote-meta" id="vote-meta"></div>
   </div>
 
   <div class="status-bar">
-    <div class="stat-block">
-      <div class="stat-label">זמן</div>
-      <div class="stat-val" id="timer-display">0:00</div>
+    <div class="stat-block"><div class="stat-label">סיבוב</div><div class="stat-val" id="round-num">1</div></div>
+    <div class="stat-block"><div class="stat-label">ניקוד</div><div class="stat-val" id="score-display">0</div></div>
+    <div class="lives-block" id="lives-block">
+      <span class="life" id="life-1">❤️</span>
+      <span class="life" id="life-2">❤️</span>
+      <span class="life" id="life-3">❤️</span>
     </div>
-    <div class="stat-block">
-      <div class="stat-label">נמצאו</div>
-      <div class="stat-val" id="found-display">0/0</div>
-    </div>
-    <div class="stat-block">
-      <div class="stat-label">נותרו</div>
-      <div class="stat-val" id="remain-display">0</div>
+    <div class="stat-block"><div class="stat-label">זמן מקסימלי</div><div class="stat-val" id="max-time-display">45</div></div>
+  </div>
+
+  <div class="timer-wrap">
+    <div class="timer-row">
+      <div class="timer-num" id="timer-num">45</div>
+      <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
     </div>
   </div>
 
-  <!-- רשימת שמות ח"כים -->
-  <div class="mk-list" id="mk-list"></div>
-
-  <!-- גריד -->
-  <div class="grid-container">
-    <div class="grid" id="grid"></div>
-  </div>
+  <div class="grid-container"><div class="grid" id="grid"></div></div>
 
 </div>
 
-<!-- Win overlay -->
+<!-- SPLASH -->
+<div class="splash-overlay hidden" id="splash-overlay">
+  <div class="splash-card">
+    <div class="splash-badge" id="splash-badge">סיבוב 1</div>
+    <div class="splash-question" id="splash-question"></div>
+    <div class="splash-instruction" id="splash-instruction"></div>
+    <button class="btn-primary" onclick="dismissSplash()">▶ התחל — השעון רץ!</button>
+  </div>
+</div>
+
+<!-- WIN overlay -->
 <div class="overlay" id="win-overlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-emoji">🏆</div>
-    <div class="sheet-title">מצאת את כולם!</div>
+    <div class="sheet-emoji">🎯</div>
+    <div class="sheet-title">מצאת אותו!</div>
     <div class="stats-row">
-      <div class="stat-box"><div class="val" id="win-time">0:00</div><div class="lbl">זמן</div></div>
-      <div class="stat-box"><div class="val" id="win-found">0</div><div class="lbl">ח"כים</div></div>
+      <div class="stat-box"><div class="val" id="win-round">1</div><div class="lbl">סיבוב</div></div>
+      <div class="stat-box"><div class="val" id="win-score">+0</div><div class="lbl">+ניקוד</div></div>
+      <div class="stat-box"><div class="val" id="win-timeleft">--</div><div class="lbl">שנ' נותרו</div></div>
+      <div class="stat-box"><div class="val" id="win-nexttime">--</div><div class="lbl">זמן הבא</div></div>
     </div>
     <div class="sheet-sub" id="win-sub"></div>
-    <div class="win-mk-list" id="win-mk-list"></div>
-    <button class="btn-primary" onclick="restartGame()">🔀 הצבעה אחרת</button>
-    <button class="btn-secondary" onclick="document.getElementById('win-overlay').classList.remove('show')">סגור</button>
+    <button class="btn-primary" onclick="nextRound()">המשך לסיבוב הבא ←</button>
+    <button class="btn-secondary" onclick="finishGame()">סיים ושמור ניקוד</button>
   </div>
 </div>
 
-<!-- Info overlay -->
+<!-- GAME OVER -->
+<div class="overlay" id="gameover-overlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-emoji">😵</div>
+    <div class="sheet-title">נגמר הזמן!</div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="val" id="go-rounds">0</div><div class="lbl">סיבובים</div></div>
+      <div class="stat-box"><div class="val" id="go-score">0</div><div class="lbl">ניקוד סופי</div></div>
+      <div class="stat-box"><div class="val" id="go-best">--</div><div class="lbl">שיא אישי</div></div>
+    </div>
+    <div class="sheet-sub">נסה שוב!</div>
+    <button class="btn-primary" onclick="restartGame()">התחל מחדש</button>
+  </div>
+</div>
+
+<!-- INFO -->
 <div class="overlay" id="info-overlay">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title" style="font-size:1.2rem;">איך משחקים?</div>
     <div style="width:100%;display:flex;flex-direction:column;gap:8px;text-align:right;">
-      <div class="welcome-step">
-        <span class="welcome-step-icon">🗳️</span>
-        <div class="welcome-step-text">קרא את <strong>נושא ההצבעה</strong> ומי הצביע בה — ומצא אותם בגריד האותיות.</div>
-      </div>
-      <div class="welcome-step">
-        <span class="welcome-step-icon">👆</span>
-        <div class="welcome-step-text">גרור עם האצבע/עכבר, או <strong>לחץ אות-אות</strong> — <strong>אופקי, אנכי ואלכסוני</strong> בכל כיוון.</div>
-      </div>
-      <div class="welcome-step">
-        <span class="welcome-step-icon">🎨</span>
-        <div class="welcome-step-text">כל ח"כ שנמצא מודגש ב<strong>צבע ייחודי</strong> — מצא את כל מי שמופיע ברשימה.</div>
-      </div>
-      <div class="welcome-step">
-        <span class="welcome-step-icon">⏱️</span>
-        <div class="welcome-step-text">הטיימר סופר מהרגע שהמשחק מתחיל — נסה לשבור את השיא שלך!</div>
-      </div>
-      <div class="welcome-step">
-        <span class="welcome-step-icon">↺</span>
-        <div class="welcome-step-text">לחץ <strong>↺</strong> בכל עת לטעינת הצבעה אחרת.</div>
-      </div>
+      <div class="welcome-step"><span class="welcome-step-icon">🗳️</span>
+        <div class="welcome-step-text">בכל סיבוב מוצג <strong>נושא הצבעה</strong> — מצא בגריד שם ח"כ שהצביע בה.</div></div>
+      <div class="welcome-step"><span class="welcome-step-icon">👆</span>
+        <div class="welcome-step-text">גרור עם האצבע/עכבר, או <strong>לחץ אות-אות</strong> — אופקי, אנכי ואלכסוני בכל כיוון.</div></div>
+      <div class="welcome-step"><span class="welcome-step-icon">⏱️</span>
+        <div class="welcome-step-text">יש זמן מוגבל. <strong>ככל שמוצאים מהר — יותר נקודות.</strong> הזמן קצר יותר בכל סיבוב.</div></div>
+      <div class="welcome-step"><span class="welcome-step-icon">❤️</span>
+        <div class="welcome-step-text"><strong>3 חיים</strong>. כשנגמר הזמן מאבדים חיים. בלי חיים — המשחק נגמר.</div></div>
+      <div class="welcome-step"><span class="welcome-step-icon">💡</span>
+        <div class="welcome-step-text"><strong>רמז</strong> — מדגיש אות אחת, אבל מפחית 20% מהניקוד.</div></div>
+      <div class="welcome-step"><span class="welcome-step-icon">🏳️</span>
+        <div class="welcome-step-text"><strong>ויתור</strong> — מסיים את המשחק ושומר את הניקוד שצברת.</div></div>
     </div>
     <button class="btn-primary" onclick="document.getElementById('info-overlay').classList.remove('show')">הבנתי!</button>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 // CONFIG
-// ═══════════════════════════════════════════════════════════
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw7mtU_4w7tz6Iz4VPAkO5eUdEnil2PsiLpo17zscAJNxMJml7p5qBr9wJifIgiYlpy/exec";
-const KNESSET_BASES   = [
-  "https://www.knesset.gov.il",
-  "https://knesset.gov.il",
-  "https://main.knesset.gov.il",
-];
+// ════════════════════════════════════════
+const APPS_URL    = "https://script.google.com/macros/s/AKfycbw7mtU_4w7tz6Iz4VPAkO5eUdEnil2PsiLpo17zscAJNxMJml7p5qBr9wJifIgiYlpy/exec";
+const KNESSET_BASES = ["https://www.knesset.gov.il","https://knesset.gov.il","https://main.knesset.gov.il"];
 const DETAIL_PATH = "/WebSiteApi/knessetapi/Votes/GetVoteDetails/";
-const CACHE_KEY   = "mk-wordsearch-cache-v1";
+const CACHE_KEY   = "mk-wdsrch-v3";
+const LB_KEY      = "mk-wdsrch-lb-v1";
+const LB_MAX      = 5;
+const MAX_LIVES   = 3;
+const INIT_TIME   = 45;
+const TIME_STEP   = 4;
+const MIN_TIME    = 12;
+const HEB         = 'אבגדהוזחטיכלמנסעפצקרשת';
+const FINALS      = {'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ'};
+const TYPE_HEB    = {for:'בעד',against:'נגד',abstain:'נמנע'};
+const TYPE_CLASS  = {for:'for',against:'against',abstain:'abstain'};
 
-const HEB = 'אבגדהוזחטיכלמנסעפצקרשת';
-const FINAL_TO_REG = { 'ך':'כ','ם':'מ','ן':'נ','ף':'פ','ץ':'צ' };
-const MK_COLORS = [
-  { bg:'rgba(45,198,83,0.15)',  border:'rgba(45,198,83,0.5)',  text:'#15803d'  },
-  { bg:'rgba(37,99,235,0.12)',  border:'rgba(37,99,235,0.5)',  text:'#1d4ed8'  },
-  { bg:'rgba(230,57,70,0.12)',  border:'rgba(230,57,70,0.5)',  text:'#b91c1c'  },
-  { bg:'rgba(245,158,11,0.15)', border:'rgba(245,158,11,0.5)', text:'#92400e'  },
-  { bg:'rgba(139,92,246,0.12)', border:'rgba(139,92,246,0.5)', text:'#6d28d9'  },
-  { bg:'rgba(6,182,212,0.12)',  border:'rgba(6,182,212,0.5)',  text:'#0e7490'  },
-  { bg:'rgba(236,72,153,0.12)', border:'rgba(236,72,153,0.5)', text:'#9d174d'  },
-  { bg:'rgba(16,185,129,0.12)', border:'rgba(16,185,129,0.5)', text:'#065f46'  },
-  { bg:'rgba(249,115,22,0.12)', border:'rgba(249,115,22,0.5)', text:'#c2410c'  },
-  { bg:'rgba(99,102,241,0.12)', border:'rgba(99,102,241,0.5)', text:'#4338ca'  },
-];
+const sleep = ms => new Promise(r => setTimeout(r,ms));
+const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const toGrid  = str => str.replace(/\s+/g,'').replace(/[ךםןףץ]/g,l=>FINALS[l]||l);
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-function readCache()   { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}'); } catch { return {}; } }
-function writeCache(d) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch {} }
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function toGridWord(str) {
-  return str.replace(/\s+/g, '').replace(/[ךםןףץ]/g, l => FINAL_TO_REG[l] || l);
-}
-
-function normalizeVote(title) {
-  if (!title) return null;
-  const t = title.trim();
-  if (t === 'בעד')  return 'for';
-  if (t === 'נגד')  return 'against';
-  if (t === 'נמנע' || t === 'נמנע/נעדר' || t === 'נעדר') return 'abstain';
+function normVote(t) {
+  if(!t) return null; t=t.trim();
+  if(t==='בעד') return 'for';
+  if(t==='נגד') return 'against';
+  if(t==='נמנע'||t==='נמנע/נעדר'||t==='נעדר') return 'abstain';
   return null;
 }
+function normType(t) {
+  if(!t) return ''; t=t.trim();
+  if(t==='בעד') return 'for';
+  if(t==='נגד') return 'against';
+  if(t==='נמנע') return 'abstain';
+  if(['for','against','abstain'].includes(t)) return t;
+  return '';
+}
+const readCache  = () => { try{return JSON.parse(localStorage.getItem(CACHE_KEY)||'{}')}catch{return{}} };
+const writeCache = d => { try{localStorage.setItem(CACHE_KEY,JSON.stringify(d))}catch{} };
+const lbLoad     = () => { try{return JSON.parse(localStorage.getItem(LB_KEY)||'[]')}catch{return[]} };
+const lbSave     = e => { try{localStorage.setItem(LB_KEY,JSON.stringify(e))}catch{} };
 
-// ═══════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════
-let allGames      = [];   // [{voteId, title, shortName, date, decision, members:[{name,vote,faction}]}]
-let currentGame   = null; // game object currently in play
-let currentMKs    = [];   // [{name, gridWord, colorIdx, found}]
-let grid          = [];   // 2D array of letters
-let rows = 0, cols = 0;
-let mkCells       = {};   // gridWord -> Set of "r,c" keys
-let foundCount    = 0;
-let timerInterval = null;
-let timerSeconds  = 0;
-let gameActive    = false;
-
-// Selection state
-let selectedCells = [];
-let isDragging    = false;
-let selectStart   = null;
-let clickChain    = [];
-let clickMode     = false;
-let _pendingDrag  = null;
-
-// ═══════════════════════════════════════════════════════════
-// DATA LOADING
-// ═══════════════════════════════════════════════════════════
-async function fetchSheetRows() {
-  const resp = await fetch(APPS_SCRIPT_URL);
-  const data = await resp.json();
-  if (!Array.isArray(data)) throw new Error('שגיאה בטעינת הנתונים מהגיליון');
-  return data
-    .filter(r => r.voteId && /^\d+$/.test(r.voteId))
-    .map(r => ({
-      ...r,
-      shortName: (r.shortName || r.short_name || '').trim(),
-      type: (r.type || '').trim()
-    }));
+function lbAdd(score, rounds) {
+  const entries = lbLoad();
+  entries.push({score,rounds,ts:Date.now()});
+  entries.sort((a,b)=>b.score-a.score);
+  lbSave(entries.slice(0,LB_MAX));
+  return entries[0]?.score || 0;
 }
 
-async function fetchVoteDetails(voteId) {
-  for (const base of KNESSET_BASES) {
-    try {
-      const r = await fetch(base + DETAIL_PATH + voteId, { mode: 'cors' });
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      const data = await r.json();
-      if (data?.VoteDetails) return data;
-    } catch (_) {}
+// ════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════
+let allGames = []; // [{voteId,shortName,title,date,type,members:[{name,vote,faction}]}]
+let usedPairs = new Set(); // "voteId|mkName" already shown
+
+async function fetchRows() {
+  const r = await fetch(APPS_URL);
+  const d = await r.json();
+  if(!Array.isArray(d)) throw new Error('שגיאה בנתוני הגיליון');
+  return d.filter(r=>{
+    const id=r.voteId||r.VoteId;
+    return id&&/^\d+$/.test(String(id).trim());
+  }).map(r=>({
+    voteId:   String(r.voteId||r.VoteId||'').trim(),
+    shortName:(r.shortName||r.Short_name||r.short_name||'').trim(),
+    type:     normType(r.type||r.Type||''),
+  }));
+}
+
+async function fetchDetails(voteId) {
+  for(const base of KNESSET_BASES){
+    try{
+      const r=await fetch(base+DETAIL_PATH+voteId,{mode:'cors'});
+      if(!r.ok) throw new Error(`HTTP ${r.status}`);
+      const d=await r.json();
+      if(d?.VoteDetails) return d;
+    }catch(_){}
     await sleep(200);
   }
-  throw new Error(`שגיאה בטעינת הצבעה ${voteId}`);
+  throw new Error(`לא נמצאה הצבעה ${voteId}`);
 }
 
-function buildGame(row, data) {
-  const header  = data.VoteHeader?.[0] || {};
-  const targetVote = row.type; // 'for' | 'against' | 'abstain' | '' (all)
-  const members = (data.VoteDetails || [])
-    .filter(d => {
-      const v = normalizeVote(d.Title);
-      if (!v) return false;
-      if (!targetVote) return true;
-      return v === targetVote;
+function buildGame(row,data) {
+  const header=data.VoteHeader?.[0]||{};
+  const members=(data.VoteDetails||[])
+    .filter(d=>{
+      const v=normVote(d.Title);
+      if(!v) return false;
+      return !row.type||v===row.type;
     })
-    .map(d => ({
-      name:    (d.MkName || '').trim(),
-      vote:    normalizeVote(d.Title),
-      faction: (d.FactionName || '').trim(),
-    }))
-    .filter(m => m.name.length > 0);
-
-  if (members.length < 2) return null;
-  return {
-    voteId:    row.voteId,
-    title:     header.ItemTitle   || 'ללא כותרת',
-    shortName: row.shortName      || '',
-    date:      header.VoteDateStr || '',
-    decision:  header.Decision    || '',
-    targetVote: row.type,
-    members,
-  };
+    .map(d=>({name:(d.MkName||'').trim(),vote:normVote(d.Title),faction:(d.FactionName||'').trim()}))
+    .filter(m=>m.name.length>=2);
+  if(!members.length) return null;
+  return {voteId:row.voteId,shortName:row.shortName,
+    title:header.ItemTitle||row.shortName||'ללא כותרת',
+    date:header.VoteDateStr||'',type:row.type,members};
 }
 
-function setLoadMsg(msg) {
-  document.getElementById('load-msg').textContent = msg;
-}
-function showLoadError(msg) {
-  document.getElementById('load-spinner').style.display = 'none';
-  document.getElementById('load-msg').style.display = 'none';
-  document.getElementById('load-error').textContent = msg;
-  document.getElementById('load-error').style.display = 'block';
-  document.getElementById('load-retry').style.display = 'inline-block';
+function setLoadMsg(m){document.getElementById('load-msg').textContent=m;}
+function showLoadError(msg){
+  document.getElementById('load-spinner').style.display='none';
+  document.getElementById('load-msg').style.display='none';
+  document.getElementById('load-error').textContent=msg;
+  document.getElementById('load-error').style.display='block';
+  document.getElementById('load-retry').style.display='inline-block';
 }
 
 async function init() {
   document.getElementById('loading-screen').classList.remove('hidden');
-  document.getElementById('load-spinner').style.display = 'block';
-  document.getElementById('load-msg').style.display = 'block';
-  document.getElementById('load-error').style.display = 'none';
-  document.getElementById('load-retry').style.display = 'none';
+  ['load-spinner','load-msg'].forEach(id=>document.getElementById(id).style.display='block');
+  ['load-error','load-retry'].forEach(id=>document.getElementById(id).style.display='none');
   setLoadMsg('טוען נתוני הצבעות...');
-
-  try {
-    const rows  = await fetchSheetRows();
-    if (!rows.length) throw new Error('לא נמצאו הצבעות בגיליון');
+  try{
+    const rows=await fetchRows();
+    if(!rows.length) throw new Error('לא נמצאו הצבעות בגיליון');
     setLoadMsg('מוריד פרטי הצבעות...');
-
-    const cache = readCache();
-    // Load up to 8 games in parallel, prefer cached
-    const shuffled = shuffle(rows);
-    const toLoad   = [];
-    const loaded   = [];
-
-    for (const row of shuffled) {
-      if (cache[row.voteId]) {
-        loaded.push(cache[row.voteId]);
-      } else {
-        toLoad.push(row);
+    const cache=readCache(), results=[];
+    for(const row of shuffle(rows)){
+      if(cache[row.voteId]) results.push(cache[row.voteId]);
+      else{
+        try{
+          const data=await fetchDetails(row.voteId);
+          const g=buildGame(row,data);
+          if(g){cache[row.voteId]=g;results.push(g);}
+        }catch(_){}
       }
-      if (loaded.length + toLoad.length >= 8) break;
+      if(results.length>=10) break;
     }
-
-    const fetched = await Promise.all(
-      toLoad.map(async row => {
-        try {
-          const data = await fetchVoteDetails(row.voteId);
-          return buildGame(row, data);
-        } catch { return null; }
-      })
-    );
-
-    fetched.filter(Boolean).forEach(g => { cache[g.voteId] = g; });
     writeCache(cache);
-
-    allGames = shuffle([...loaded, ...fetched.filter(Boolean)]);
-    if (!allGames.length) throw new Error('לא הצלחנו לטעון הצבעות תקינות. נסה שוב.');
-
+    allGames=shuffle(results);
+    if(!allGames.length) throw new Error('לא הצלחנו לטעון הצבעות. נסה שוב.');
+    highScore=lbLoad()[0]?.score||0;
     document.getElementById('loading-screen').classList.add('hidden');
     document.getElementById('welcome-overlay').classList.remove('hidden');
+  }catch(e){ showLoadError(e.message||'שגיאה בטעינה'); }
+}
 
-  } catch (e) {
-    showLoadError(e.message || 'שגיאה בטעינה');
+// ════════════════════════════════════════
+// GAME STATE
+// ════════════════════════════════════════
+let round=1, lives=MAX_LIVES, totalScore=0, roundsWon=0;
+let highScore=0, gameActive=false, hintUsed=false;
+let timeLeft=INIT_TIME, totalTime=INIT_TIME, timerInterval=null;
+let currentGame=null, currentMK=null, currentGridWord='', targetCells=new Set();
+let gridArr=[], gridRows=0, gridCols=0;
+let selectedCells=[], isDragging=false, selectStart=null;
+let clickChain=[], clickMode=false, _pendingDrag=null;
+
+function getRoundTime(r){ return Math.max(MIN_TIME, INIT_TIME-(r-1)*TIME_STEP); }
+
+function getRoundGrid(r){
+  const step=Math.floor((r-1)/2);
+  const rows=Math.min(6+step*2,14), cols=Math.min(8+step*2,12);
+  const screenW=window.innerWidth-20, screenH=window.innerHeight;
+  const availH=screenH-240, availW=Math.min(screenW,700);
+  const byW=Math.floor((availW-(cols-1)*2)/cols);
+  const byH=Math.floor((availH-(rows-1)*2)/rows);
+  const cellSize=Math.max(20,Math.min(byW,byH,40));
+  const fontSize=cellSize>=32?'1rem':cellSize>=26?'0.85rem':cellSize>=22?'0.72rem':'0.62rem';
+  return {rows,cols,cellSize,fontSize};
+}
+
+// ════════════════════════════════════════
+// PICK QUESTION
+// ════════════════════════════════════════
+function pickPair() {
+  // Build pool of (game, member) pairs not yet used
+  const pool=[];
+  for(const g of allGames){
+    for(const m of g.members){
+      const key=`${g.voteId}|${m.name}`;
+      if(!usedPairs.has(key)){
+        const gw=toGrid(m.name);
+        const maxLen=Math.max(getRoundGrid(round).rows,getRoundGrid(round).cols);
+        if(gw.length>=2&&gw.length<=maxLen) pool.push({game:g,mk:m,gridWord:gw,key});
+      }
+    }
   }
+  if(!pool.length){ usedPairs.clear(); return pickPair(); } // reset if exhausted
+  return pool[Math.floor(Math.random()*pool.length)];
 }
 
-// ═══════════════════════════════════════════════════════════
-// GAME SETUP
-// ═══════════════════════════════════════════════════════════
-function pickGame() {
-  if (!allGames.length) return null;
-  // Remove current from front to avoid repeat
-  const pool = currentGame
-    ? allGames.filter(g => g.voteId !== currentGame.voteId)
-    : allGames;
-  return (pool.length ? pool : allGames)[Math.floor(Math.random() * (pool.length || allGames.length))];
-}
-
-function calcGridSize(mkCount) {
-  // Need enough room for all names; be generous
-  const screenW = window.innerWidth - 20;
-  const screenH = window.innerHeight;
-  // Rough estimate: each MK name ~5-8 chars; grid should be at least 12x14
-  const baseRows = Math.min(14, Math.max(10, 8 + Math.ceil(mkCount / 2)));
-  const baseCols = Math.min(12, Math.max(10, 8 + Math.ceil(mkCount / 3)));
-
-  // Calculate panel heights above grid
-  const panelH = 260; // header + banner + status + chips
-  const availH = screenH - panelH;
-  const availW = Math.min(screenW, 700) - 20;
-
-  const byW = Math.floor((availW - (baseCols - 1) * 2) / baseCols);
-  const byH = Math.floor((availH - (baseRows - 1) * 2) / baseRows);
-  const cellSize = Math.max(20, Math.min(byW, byH, 38));
-  const fontSize = cellSize >= 30 ? '0.82rem' : cellSize >= 24 ? '0.7rem' : '0.6rem';
-
-  return { rows: baseRows, cols: baseCols, cellSize, fontSize };
-}
-
-function startGame(game) {
-  stopTimer();
-  currentGame  = game;
-  foundCount   = 0;
-  gameActive   = false;
-  clickChain   = [];
-  clickMode    = false;
-  selectedCells = [];
-
-  // Pick MKs to hide (max 10, shuffled)
-  const pool = shuffle(game.members).slice(0, 10);
-  currentMKs = pool.map((mk, i) => ({
-    ...mk,
-    gridWord: toGridWord(mk.name),
-    colorIdx: i % MK_COLORS.length,
-    found: false,
-  })).filter(mk => mk.gridWord.length >= 2);
-
-  if (!currentMKs.length) {
-    // No valid MKs — try another game
-    const next = pickGame();
-    if (next) startGame(next);
-    return;
-  }
-
-  // Render vote banner
-  const voteTypeLabel = { for:'הצביעו בעד', against:'הצביעו נגד', abstain:'נמנעו' };
-  const typeClass     = { for:'for', against:'against', abstain:'abstain' };
-  document.getElementById('vote-title').textContent = game.shortName || game.title;
-  const meta = document.getElementById('vote-meta');
-  meta.innerHTML = '';
-  if (game.targetVote) {
-    const pill = document.createElement('span');
-    pill.className = `vote-pill ${typeClass[game.targetVote] || ''}`;
-    pill.textContent = voteTypeLabel[game.targetVote] || game.targetVote;
-    meta.appendChild(pill);
-  }
-  if (game.date) {
-    const d = document.createElement('span');
-    d.className = 'vote-pill';
-    d.textContent = '📅 ' + game.date;
-    meta.appendChild(d);
-  }
-
-  // Render MK chips
-  renderChips();
-
-  // Build grid
-  const cfg = calcGridSize(currentMKs.length);
-  rows = cfg.rows; cols = cfg.cols;
-  document.documentElement.style.setProperty('--cell-size', cfg.cellSize + 'px');
-  document.documentElement.style.setProperty('--grid-font', cfg.fontSize);
-  generateGrid();
-  renderGrid();
-  updateStatus();
-
-  // Start timer
-  timerSeconds = 0;
-  updateTimerDisplay();
-  timerInterval = setInterval(() => {
-    timerSeconds++;
-    updateTimerDisplay();
-  }, 1000);
-  gameActive = true;
-}
-
-function renderChips() {
-  const list = document.getElementById('mk-list');
-  list.innerHTML = '';
-  currentMKs.forEach((mk, i) => {
-    const c   = MK_COLORS[mk.colorIdx];
-    const chip = document.createElement('span');
-    chip.className   = 'mk-chip';
-    chip.id          = `chip-${i}`;
-    chip.textContent = mk.name;
-    chip.style.color       = c.text;
-    chip.style.borderColor = c.border;
-    chip.style.background  = c.bg;
-    list.appendChild(chip);
-  });
-}
-
-function updateStatus() {
-  const total = currentMKs.length;
-  document.getElementById('found-display').textContent  = `${foundCount}/${total}`;
-  document.getElementById('remain-display').textContent = total - foundCount;
-}
-
-function updateTimerDisplay() {
-  const m = Math.floor(timerSeconds / 60);
-  const s = timerSeconds % 60;
-  document.getElementById('timer-display').textContent = `${m}:${String(s).padStart(2, '0')}`;
-}
-
-function stopTimer() {
-  clearInterval(timerInterval);
-  timerInterval = null;
-}
-
-// ═══════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 // GRID GENERATION
-// ═══════════════════════════════════════════════════════════
-function generateGrid() {
-  grid = Array.from({ length: rows }, () => Array(cols).fill(''));
-  mkCells = {};
+// ════════════════════════════════════════
+function generateGrid(word){
+  const cfg=getRoundGrid(round);
+  gridRows=cfg.rows; gridCols=cfg.cols;
+  document.documentElement.style.setProperty('--cell-size',cfg.cellSize+'px');
+  document.documentElement.style.setProperty('--grid-font',cfg.fontSize);
 
-  const dirs = [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+  const maxLen=Math.max(gridRows,gridCols);
+  if(word.length>maxLen) word=word.slice(0,maxLen);
 
-  for (const mk of currentMKs) {
-    const word = mk.gridWord;
-    const maxLen = Math.max(rows, cols);
-    if (word.length > maxLen) { mk.gridWord = word.slice(0, maxLen); }
-    let placed = false, attempts = 0;
-    while (!placed && attempts < 400) {
-      attempts++;
-      const [dr, dc] = dirs[Math.floor(Math.random() * dirs.length)];
-      const sr = Math.floor(Math.random() * rows);
-      const sc = Math.floor(Math.random() * cols);
-      const er = sr + dr * (word.length - 1);
-      const ec = sc + dc * (word.length - 1);
-      if (er < 0 || er >= rows || ec < 0 || ec >= cols) continue;
-      let ok = true;
-      for (let i = 0; i < word.length; i++) {
-        const r = sr + dr * i, c = sc + dc * i;
-        if (grid[r][c] !== '' && grid[r][c] !== word[i]) { ok = false; break; }
-      }
-      if (!ok) continue;
-      const cellSet = new Set();
-      for (let i = 0; i < word.length; i++) {
-        const r = sr + dr * i, c = sc + dc * i;
-        grid[r][c] = word[i];
-        cellSet.add(`${r},${c}`);
-      }
-      mkCells[word] = cellSet;
-      placed = true;
+  gridArr=Array.from({length:gridRows},()=>Array(gridCols).fill(''));
+  targetCells=new Set();
+  const dirs=[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+  let placed=false, attempts=0;
+  while(!placed&&attempts<400){
+    attempts++;
+    const [dr,dc]=dirs[Math.floor(Math.random()*dirs.length)];
+    const sr=Math.floor(Math.random()*gridRows), sc=Math.floor(Math.random()*gridCols);
+    const er=sr+dr*(word.length-1), ec=sc+dc*(word.length-1);
+    if(er<0||er>=gridRows||ec<0||ec>=gridCols) continue;
+    let ok=true;
+    for(let i=0;i<word.length;i++){
+      const r=sr+dr*i,c=sc+dc*i;
+      if(gridArr[r][c]!==''&&gridArr[r][c]!==word[i]){ok=false;break;}
     }
-    if (!placed) {
-      // Remove this MK if we can't place it
-      mk._failed = true;
+    if(!ok) continue;
+    for(let i=0;i<word.length;i++){
+      const r=sr+dr*i,c=sc+dc*i;
+      gridArr[r][c]=word[i]; targetCells.add(`${r},${c}`);
     }
+    placed=true;
   }
-
-  // Remove failed MKs
-  const before = currentMKs.length;
-  currentMKs = currentMKs.filter(m => !m._failed);
-  if (currentMKs.length < before) renderChips();
-
-  // Fill blanks
-  for (let r = 0; r < rows; r++)
-    for (let c = 0; c < cols; c++)
-      if (grid[r][c] === '') grid[r][c] = HEB[Math.floor(Math.random() * HEB.length)];
+  if(!placed) return generateGrid(word); // retry
+  for(let r=0;r<gridRows;r++) for(let c=0;c<gridCols;c++)
+    if(gridArr[r][c]==='') gridArr[r][c]=HEB[Math.floor(Math.random()*HEB.length)];
 }
 
-// ═══════════════════════════════════════════════════════════
-// GRID RENDER
-// ═══════════════════════════════════════════════════════════
-function renderGrid() {
-  const el = document.getElementById('grid');
-  el.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`;
-  el.className = 'grid';
-  el.innerHTML = '';
+// ════════════════════════════════════════
+// RENDER GRID
+// ════════════════════════════════════════
+function renderGrid(){
+  const el=document.getElementById('grid');
+  el.style.gridTemplateColumns=`repeat(${gridCols},var(--cell-size))`;
+  el.className='grid'; el.innerHTML='';
+  for(let r=0;r<gridRows;r++) for(let c=0;c<gridCols;c++){
+    const cell=document.createElement('div');
+    cell.className='cell'; cell.textContent=gridArr[r][c];
+    cell.dataset.r=r; cell.dataset.c=c;
 
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const cell = document.createElement('div');
-      cell.className   = 'cell';
-      cell.textContent = grid[r][c];
-      cell.dataset.r   = r;
-      cell.dataset.c   = c;
-
-      // Mouse
-      cell.addEventListener('mousedown', e => {
-        e.preventDefault();
-        _pendingDrag = { r, c };
-      });
-      cell.addEventListener('mouseenter', () => {
-        if (_pendingDrag && !isDragging) {
-          clearClickChain();
-          startSel(_pendingDrag.r, _pendingDrag.c);
-          _pendingDrag = null;
+    cell.addEventListener('mousedown',e=>{e.preventDefault();_pendingDrag={r,c};});
+    cell.addEventListener('mouseenter',()=>{
+      if(_pendingDrag&&!isDragging){clearClickChain();startSel(_pendingDrag.r,_pendingDrag.c);_pendingDrag=null;}
+      if(isDragging) extendSel(r,c);
+    });
+    cell.addEventListener('mouseup',()=>{
+      if(isDragging) endSel();
+      else if(_pendingDrag){_pendingDrag=null;handleClick(r,c);}
+    });
+    cell.addEventListener('touchstart',e=>{e.preventDefault();_pendingDrag={r,c};},{passive:false});
+    cell.addEventListener('touchmove',e=>{
+      e.preventDefault();
+      const t=e.touches[0],el2=document.elementFromPoint(t.clientX,t.clientY);
+      if(!el2||!el2.classList.contains('cell')) return;
+      const tr=+el2.dataset.r,tc=+el2.dataset.c;
+      if(_pendingDrag&&!isDragging){
+        if(tr!==_pendingDrag.r||tc!==_pendingDrag.c){
+          clearClickChain();startSel(_pendingDrag.r,_pendingDrag.c);_pendingDrag=null;extendSel(tr,tc);
         }
-        if (isDragging) extendSel(r, c);
-      });
-      cell.addEventListener('mouseup', () => {
-        if (isDragging) {
-          endSel();
-        } else if (_pendingDrag) {
-          _pendingDrag = null;
-          handleCellClick(r, c);
-        }
-      });
-
-      // Touch
-      cell.addEventListener('touchstart', e => {
-        e.preventDefault();
-        _pendingDrag = { r, c };
-      }, { passive: false });
-      cell.addEventListener('touchmove', e => {
-        e.preventDefault();
-        const t  = e.touches[0];
-        const target = document.elementFromPoint(t.clientX, t.clientY);
-        if (!target || !target.classList.contains('cell')) return;
-        const tr = +target.dataset.r, tc = +target.dataset.c;
-        if (_pendingDrag && !isDragging) {
-          if (tr !== _pendingDrag.r || tc !== _pendingDrag.c) {
-            clearClickChain();
-            startSel(_pendingDrag.r, _pendingDrag.c);
-            _pendingDrag = null;
-            extendSel(tr, tc);
-          }
-        } else if (isDragging) {
-          extendSel(tr, tc);
-        }
-      }, { passive: false });
-      cell.addEventListener('touchend', () => {
-        if (isDragging) {
-          endSel();
-        } else if (_pendingDrag) {
-          _pendingDrag = null;
-          handleCellClick(r, c);
-        }
-      });
-
-      el.appendChild(cell);
-    }
+      }else if(isDragging) extendSel(tr,tc);
+    },{passive:false});
+    cell.addEventListener('touchend',()=>{
+      if(isDragging) endSel();
+      else if(_pendingDrag){_pendingDrag=null;handleClick(r,c);}
+    });
+    el.appendChild(cell);
   }
 }
 
-function getCellEl(r, c) {
-  return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
-}
+const getCellEl=(r,c)=>document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
 
-// ═══════════════════════════════════════════════════════════
-// SELECTION — CLICK MODE
-// ═══════════════════════════════════════════════════════════
-function isAdjacent(r1, c1, r2, c2) {
-  return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1 && !(r1 === r2 && c1 === c2);
-}
+// ════════════════════════════════════════
+// SELECTION
+// ════════════════════════════════════════
+const isAdj=(r1,c1,r2,c2)=>Math.abs(r1-r2)<=1&&Math.abs(c1-c2)<=1&&!(r1===r2&&c1===c2);
 
-function handleCellClick(r, c) {
-  if (!gameActive) return;
-  if (clickChain.length === 0) {
-    clickChain = [{ r, c }];
-    clickMode  = true;
-    updateSelUI();
-    return;
-  }
-  const head = clickChain[0];
-  const tail = clickChain[clickChain.length - 1];
-  const inChain  = clickChain.some(p => p.r === r && p.c === c);
-  if (inChain) {
-    clickChain = [{ r, c }];
-    clickMode  = true;
-    updateSelUI();
-    return;
-  }
-  const adjToTail = isAdjacent(tail.r, tail.c, r, c);
-  const adjToHead = isAdjacent(head.r, head.c, r, c);
-  if (adjToTail || adjToHead) {
-    if (adjToTail) clickChain.push({ r, c });
-    else           clickChain.unshift({ r, c });
-    clickMode     = true;
-    selectedCells = [...clickChain];
-    updateSelUI();
-    checkSel();
+function handleClick(r,c){
+  if(!gameActive) return;
+  if(clickChain.length===0){clickChain=[{r,c}];clickMode=true;updateSelUI();return;}
+  const head=clickChain[0],tail=clickChain[clickChain.length-1];
+  const inChain=clickChain.some(p=>p.r===r&&p.c===c);
+  if(inChain){clickChain=[{r,c}];clickMode=true;updateSelUI();return;}
+  const adjTail=isAdj(tail.r,tail.c,r,c),adjHead=isAdj(head.r,head.c,r,c);
+  if(adjTail||adjHead){
+    if(adjTail) clickChain.push({r,c}); else clickChain.unshift({r,c});
+    clickMode=true; selectedCells=[...clickChain]; updateSelUI(); checkSel();
+  }else{clickChain=[{r,c}];clickMode=true;updateSelUI();}
+}
+function clearClickChain(){clickChain=[];clickMode=false;}
+function startSel(r,c){if(!gameActive)return;clearClickChain();isDragging=true;selectStart={r,c};selectedCells=[{r,c}];updateSelUI();}
+function extendSel(r,c){
+  if(!isDragging||!selectStart) return;
+  const dr=r-selectStart.r,dc=c-selectStart.c;
+  let nr=0,nc=0;
+  if(dr===0&&dc!==0){nc=dc>0?1:-1;}
+  else if(dc===0&&dr!==0){nr=dr>0?1:-1;}
+  else if(Math.abs(dr)===Math.abs(dc)){nr=dr>0?1:-1;nc=dc>0?1:-1;}
+  else{selectedCells=[selectStart];updateSelUI();return;}
+  const cells=[];let cr=selectStart.r,cc=selectStart.c;
+  while(true){cells.push({r:cr,c:cc});if(cr===r&&cc===c)break;cr+=nr;cc+=nc;if(cr<0||cr>=gridRows||cc<0||cc>=gridCols)break;}
+  selectedCells=cells;updateSelUI();
+}
+function endSel(){if(!isDragging)return;isDragging=false;checkSel();selectedCells=[];updateSelUI();selectStart=null;}
+function updateSelUI(){
+  document.querySelectorAll('.cell.selected').forEach(el=>el.classList.remove('selected'));
+  const src=clickMode?clickChain:selectedCells;
+  src.forEach(({r,c})=>{const el=getCellEl(r,c);if(el&&!el.classList.contains('found')&&!el.classList.contains('hint'))el.classList.add('selected');});
+}
+function checkSel(){
+  const src=clickMode?clickChain:selectedCells;
+  if(src.length<2) return;
+  const keys=new Set(src.map(({r,c})=>`${r},${c}`));
+  const overlap=[...keys].filter(k=>targetCells.has(k)).length;
+  if(overlap===targetCells.size&&keys.size===targetCells.size){
+    src.forEach(({r,c})=>{const el=getCellEl(r,c);if(el){el.classList.remove('selected','hint');el.classList.add('found');}});
+    clearClickChain();selectedCells=[];
+    setTimeout(onRoundWin,450);
   } else {
-    clickChain = [{ r, c }];
-    clickMode  = true;
-    updateSelUI();
+    document.getElementById('grid').classList.add('shake');
+    setTimeout(()=>document.getElementById('grid').classList.remove('shake'),450);
   }
 }
 
-function clearClickChain() {
-  clickChain = [];
-  clickMode  = false;
+// ════════════════════════════════════════
+// HINT
+// ════════════════════════════════════════
+function useHint(){
+  if(hintUsed||!gameActive) return;
+  hintUsed=true;
+  const btn=document.getElementById('hint-btn');btn.disabled=true;btn.style.opacity='0.3';
+  const available=[...targetCells].filter(k=>{const el=getCellEl(...k.split(',').map(Number));return el&&!el.classList.contains('found')&&!el.classList.contains('hint');});
+  if(!available.length) return;
+  const key=available[Math.floor(Math.random()*available.length)];
+  const [r,c]=key.split(',').map(Number);const el=getCellEl(r,c);if(el)el.classList.add('hint');
 }
 
-// ═══════════════════════════════════════════════════════════
-// SELECTION — DRAG MODE
-// ═══════════════════════════════════════════════════════════
-function startSel(r, c) {
-  if (!gameActive) return;
-  clearClickChain();
-  isDragging   = true;
-  selectStart  = { r, c };
-  selectedCells = [{ r, c }];
-  updateSelUI();
+// ════════════════════════════════════════
+// TIMER
+// ════════════════════════════════════════
+function startTimer(){clearInterval(timerInterval);updateTimerUI();timerInterval=setInterval(()=>{if(!gameActive)return;timeLeft--;updateTimerUI();if(timeLeft<=0)onTimeUp();},1000);}
+function stopTimer(){clearInterval(timerInterval);}
+function updateTimerUI(){
+  const n=document.getElementById('timer-num'),bar=document.getElementById('progress-bar');
+  n.textContent=timeLeft;bar.style.width=Math.max(0,(timeLeft/totalTime)*100)+'%';
+  const urgent=timeLeft<=10;
+  n.classList.toggle('urgent',urgent);bar.classList.toggle('urgent',urgent);
 }
-
-function extendSel(r, c) {
-  if (!isDragging || !selectStart) return;
-  const dr = r - selectStart.r, dc = c - selectStart.c;
-  let nr = 0, nc = 0;
-  if      (dr === 0 && dc !== 0)                  { nc = dc > 0 ? 1 : -1; }
-  else if (dc === 0 && dr !== 0)                  { nr = dr > 0 ? 1 : -1; }
-  else if (Math.abs(dr) === Math.abs(dc))         { nr = dr > 0 ? 1 : -1; nc = dc > 0 ? 1 : -1; }
-  else { selectedCells = [selectStart]; updateSelUI(); return; }
-
-  const cells = [];
-  let cr = selectStart.r, cc = selectStart.c;
-  while (true) {
-    cells.push({ r: cr, c: cc });
-    if (cr === r && cc === c) break;
-    cr += nr; cc += nc;
-    if (cr < 0 || cr >= rows || cc < 0 || cc >= cols) break;
-  }
-  selectedCells = cells;
-  updateSelUI();
-}
-
-function endSel() {
-  if (!isDragging) return;
-  isDragging = false;
-  checkSel();
-  selectedCells = [];
-  updateSelUI();
-  selectStart = null;
-}
-
-// ═══════════════════════════════════════════════════════════
-// SELECTION UI
-// ═══════════════════════════════════════════════════════════
-function updateSelUI() {
-  document.querySelectorAll('.cell.selected').forEach(el => {
-    // Don't remove found class
-    el.classList.remove('selected');
-  });
-  const source = clickMode ? clickChain : selectedCells;
-  source.forEach(({ r, c }) => {
-    const el = getCellEl(r, c);
-    if (el && !el.className.includes('found-')) el.classList.add('selected');
-  });
-}
-
-// ═══════════════════════════════════════════════════════════
-// CHECK SELECTION
-// ═══════════════════════════════════════════════════════════
-function checkSel() {
-  const source = clickMode ? clickChain : selectedCells;
-  if (source.length < 2) return;
-
-  const keys = new Set(source.map(({ r, c }) => `${r},${c}`));
-  const selStr = source.map(({ r, c }) => grid[r][c]).join('');
-  const selStrRev = [...selStr].reverse().join('');
-
-  // Check against each unfound MK
-  for (const mk of currentMKs) {
-    if (mk.found) continue;
-    const target = mk.gridWord;
-    if ((selStr === target || selStrRev === target) && keys.size === target.length) {
-      // Verify all cells match mkCells
-      const expected = mkCells[target];
-      if (!expected) continue;
-      const overlap = [...keys].filter(k => expected.has(k)).length;
-      if (overlap === expected.size && keys.size === expected.size) {
-        markFound(mk, keys);
-        return;
-      }
-    }
-  }
-
-  // Wrong — shake
+function onTimeUp(){
+  gameActive=false;stopTimer();lives--;updateLivesUI();
   document.getElementById('grid').classList.add('shake');
-  setTimeout(() => document.getElementById('grid').classList.remove('shake'), 450);
+  setTimeout(()=>document.getElementById('grid').classList.remove('shake'),500);
+  flashRed();revealTarget();clearClickChain();
+  if(lives<=0) setTimeout(()=>showGameOver(),2200);
+  else setTimeout(()=>startRound(round),2200);
 }
-
-function markFound(mk, keys) {
-  mk.found = true;
-  foundCount++;
-
-  // Mark cells
-  keys.forEach(key => {
-    const [r, c] = key.split(',').map(Number);
-    const el = getCellEl(r, c);
-    if (el) {
-      el.classList.remove('selected');
-      // Remove any previous found class
-      el.className = el.className.replace(/found-\d+/g, '').trim();
-      el.classList.add(`found-${mk.colorIdx}`, 'just-found');
-      setTimeout(() => el.classList.remove('just-found'), 500);
-    }
-  });
-
-  // Mark chip
-  const chip = document.getElementById(`chip-${currentMKs.indexOf(mk)}`);
-  if (chip) chip.classList.add('found');
-
-  // Clear selection
-  clearClickChain();
-  selectedCells = [];
-
-  updateStatus();
-
-  // Check win
-  if (foundCount === currentMKs.length) {
-    setTimeout(onWin, 600);
-  }
+function revealTarget(){
+  targetCells.forEach(key=>{const[r,c]=key.split(',').map(Number);const el=getCellEl(r,c);if(el){el.classList.remove('selected','hint','found');el.classList.add('revealed');}});
 }
+function flashRed(){const f=document.getElementById('screen-flash');f.className='screen-flash red';f.style.opacity='1';setTimeout(()=>f.style.opacity='0',400);}
+function updateLivesUI(){for(let i=1;i<=MAX_LIVES;i++)document.getElementById(`life-${i}`).classList.toggle('lost',i>lives);}
+function resetLives(){lives=MAX_LIVES;updateLivesUI();}
 
-// ═══════════════════════════════════════════════════════════
-// WIN
-// ═══════════════════════════════════════════════════════════
-function onWin() {
-  gameActive = false;
-  stopTimer();
-
-  const m = Math.floor(timerSeconds / 60);
-  const s = timerSeconds % 60;
-  const timeStr = `${m}:${String(s).padStart(2, '0')}`;
-
-  document.getElementById('win-time').textContent  = timeStr;
-  document.getElementById('win-found').textContent = foundCount;
-
-  const title = currentGame.shortName || currentGame.title;
-  document.getElementById('win-sub').textContent =
-    `מצאת את כל ${foundCount} חברי הכנסת שהצביעו בהצבעה "${title}"`;
-
-  // Build MK list in win sheet
-  const list = document.getElementById('win-mk-list');
-  list.innerHTML = '';
-  currentMKs.forEach(mk => {
-    const c   = MK_COLORS[mk.colorIdx];
-    const row = document.createElement('div');
-    row.className = 'win-mk-row';
-    row.innerHTML = `
-      <div class="win-mk-dot" style="background:${c.text}"></div>
-      <div class="win-mk-name">${mk.name}</div>
-      <div class="win-mk-faction">${mk.faction || ''}</div>`;
-    list.appendChild(row);
-  });
-
+// ════════════════════════════════════════
+// ROUND WIN
+// ════════════════════════════════════════
+function calcScore(){const base=timeLeft*round*10;return Math.round(hintUsed?base*0.8:base);}
+function onRoundWin(){
+  gameActive=false;stopTimer();roundsWon++;
+  const pts=calcScore();totalScore+=pts;
+  document.getElementById('score-display').textContent=totalScore.toLocaleString();
+  const nextTime=getRoundTime(round+1);
+  document.getElementById('win-round').textContent=round;
+  document.getElementById('win-score').textContent='+'+pts.toLocaleString();
+  document.getElementById('win-timeleft').textContent=timeLeft;
+  document.getElementById('win-nexttime').textContent=nextTime;
+  const cfg=getRoundGrid(round+1);
+  document.getElementById('win-sub').textContent=
+    `${currentMK.name} — ${currentGame.shortName||currentGame.title}\nגריד ${cfg.rows}×${cfg.cols} | ${nextTime} שניות`;
   document.getElementById('win-overlay').classList.add('show');
 }
+function nextRound(){document.getElementById('win-overlay').classList.remove('show');round++;startRound(round);}
+function finishGame(){document.getElementById('win-overlay').classList.remove('show');showGameOver();}
 
-// ═══════════════════════════════════════════════════════════
-// CONTROLS
-// ═══════════════════════════════════════════════════════════
-function restartGame() {
-  document.getElementById('win-overlay').classList.remove('show');
-  const next = pickGame();
-  if (next) startGame(next);
+function showGameOver(){
+  highScore=lbAdd(totalScore,roundsWon);
+  document.getElementById('go-rounds').textContent=roundsWon;
+  document.getElementById('go-score').textContent=totalScore.toLocaleString();
+  document.getElementById('go-best').textContent=highScore.toLocaleString();
+  document.getElementById('gameover-overlay').classList.add('show');
+}
+function restartGame(){
+  document.getElementById('gameover-overlay').classList.remove('show');
+  round=1;roundsWon=0;totalScore=0;lives=MAX_LIVES;usedPairs.clear();
+  document.getElementById('score-display').textContent='0';resetLives();startRound(1);
 }
 
-function confirmRestart() {
-  if (!gameActive && !timerSeconds) return;
-  if (gameActive && !confirm('לעבור להצבעה אחרת?')) return;
-  stopTimer();
-  gameActive = false;
-  clearClickChain();
-  const next = pickGame();
-  if (next) startGame(next);
+// ════════════════════════════════════════
+// START ROUND
+// ════════════════════════════════════════
+function startRound(r){
+  gameActive=false;stopTimer();hintUsed=false;
+  clearClickChain();selectedCells=[];
+  document.getElementById('round-num').textContent=r;
+  document.getElementById('giveup-btn').disabled=true;
+  const hintBtn=document.getElementById('hint-btn');hintBtn.disabled=false;hintBtn.style.opacity='1';
+  document.querySelectorAll('.cell').forEach(el=>el.classList.remove('found','selected','hint','revealed'));
+
+  totalTime=getRoundTime(r); timeLeft=totalTime;
+  document.getElementById('max-time-display').textContent=totalTime;
+
+  // Pick pair
+  const pair=pickPair();
+  currentGame=pair.game; currentMK=pair.mk; currentGridWord=pair.gridWord;
+  usedPairs.add(pair.key);
+
+  // Vote banner
+  const vt=document.getElementById('vote-title');
+  vt.style.opacity=0;setTimeout(()=>{vt.textContent=currentGame.shortName||currentGame.title;vt.style.opacity=1;},200);
+  const meta=document.getElementById('vote-meta');
+  meta.innerHTML='';
+  if(currentGame.type){
+    const p=document.createElement('span');
+    p.className=`vote-pill ${TYPE_CLASS[currentGame.type]||''}`;
+    p.textContent=(currentMK.vote===currentGame.type?TYPE_HEB[currentGame.type]:TYPE_HEB[currentMK.vote])||'';
+    meta.appendChild(p);
+  }
+  if(currentGame.date){
+    const p=document.createElement('span');p.className='vote-pill';p.textContent='📅 '+currentGame.date;meta.appendChild(p);
+  }
+
+  generateGrid(currentGridWord);
+  renderGrid();
+  updateTimerUI();
+  showSplash(r);
 }
 
-function showInfo() {
-  document.getElementById('info-overlay').classList.add('show');
+// ════════════════════════════════════════
+// SPLASH
+// ════════════════════════════════════════
+function showSplash(r){
+  document.getElementById('splash-badge').textContent=`סיבוב ${r}`;
+  const voteLabel=TYPE_HEB[currentMK.vote]||'';
+  document.getElementById('splash-question').textContent=
+    `מצא ח"כ שהצביע ${voteLabel} — ${currentGame.shortName||currentGame.title}`;
+  document.getElementById('splash-instruction').textContent=
+    `גריד ${getRoundGrid(r).rows}×${getRoundGrid(r).cols} | ${getRoundTime(r)} שניות${currentMK.faction?' | '+currentMK.faction:''}`;
+  document.getElementById('splash-overlay').classList.remove('hidden');
+}
+function dismissSplash(){
+  document.getElementById('splash-overlay').classList.add('hidden');
+  document.getElementById('giveup-btn').disabled=false;
+  gameActive=true;startTimer();
 }
 
-function dismissWelcome() {
-  const overlay = document.getElementById('welcome-overlay');
-  overlay.classList.add('hidden');
-  setTimeout(() => overlay.remove(), 450);
-  const game = pickGame();
-  if (game) startGame(game);
+// ════════════════════════════════════════
+// GIVE UP / RESTART
+// ════════════════════════════════════════
+function giveUp(){if(!gameActive)return;gameActive=false;stopTimer();document.getElementById('giveup-btn').disabled=true;clearClickChain();revealTarget();setTimeout(()=>showGameOver(),2000);}
+function confirmRestart(){
+  if(!confirm('להתחיל מחדש? הניקוד הנוכחי יאבד.')) return;
+  gameActive=false;stopTimer();
+  ['win-overlay','gameover-overlay','info-overlay'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  document.getElementById('splash-overlay').classList.add('hidden');
+  round=1;roundsWon=0;totalScore=0;usedPairs.clear();clearClickChain();
+  document.getElementById('score-display').textContent='0';resetLives();startRound(1);
+}
+function showInfo(){document.getElementById('info-overlay').classList.add('show');}
+
+// ════════════════════════════════════════
+// WELCOME
+// ════════════════════════════════════════
+function dismissWelcome(){
+  const o=document.getElementById('welcome-overlay');o.classList.add('hidden');
+  setTimeout(()=>o.remove(),450);startRound(1);
 }
 
-// ═══════════════════════════════════════════════════════════
-// GLOBAL MOUSE/TOUCH UP
-// ═══════════════════════════════════════════════════════════
-document.addEventListener('mouseup', () => {
-  if (isDragging) endSel();
-  _pendingDrag = null;
-});
+document.addEventListener('mouseup',()=>{if(isDragging)endSel();_pendingDrag=null;});
 
-// ═══════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 // BOOT
-// ═══════════════════════════════════════════════════════════
+// ════════════════════════════════════════
 init();
 </script>
 </body>
